@@ -24,17 +24,19 @@ class ListPharsCommand extends Command
     {
         $packageManager = new PackageManager();
         $knownPhars = $packageManager->getKnownPhars();
+        $pharAliases = array_flip($packageManager->getPharAliases());
 
         $output->writeln('');
         $output->writeln('<info>Known PHAR files that can be executed directly:</info>');
         $output->writeln('');
 
         $table = new Table($output);
-        $table->setHeaders(['PHAR Name', 'Available Versions']);
+        $table->setHeaders(['PHAR Name', 'Available Versions', 'Aliases']);
 
         foreach ($knownPhars as $name => $versions) {
             $versionList = implode(', ', array_keys($versions));
-            $table->addRow([$name, $versionList]);
+            $aliases = isset($pharAliases[$name]) ? $pharAliases[$name] : '';
+            $table->addRow([$name, $versionList, $aliases]);
         }
 
         $table->render();
@@ -42,11 +44,12 @@ class ListPharsCommand extends Command
         $output->writeln('');
         $output->writeln('Usage examples:');
         $output->writeln('  phpx <phar-name>[:<version>] [arguments]');
+        $output->writeln('  phpx <alias>[:<version>] [arguments]');
         $output->writeln('');
         $output->writeln('For instance:');
-        $output->writeln('  phpx php-cs-fixer.phar fix src/                  # Uses latest version');
-        $output->writeln('  phpx php-cs-fixer.phar:3.26 fix src/            # Uses specific version');
-        $output->writeln('  phpx phpunit.phar:9 --filter MyTest             # Uses PHPUnit 9.x');
+        $output->writeln('  phpx php-cs-fixer.phar fix src/                  # Full name');
+        $output->writeln('  phpx cs-fixer fix src/                          # Using alias');
+        $output->writeln('  phpx cs-fixer:3.26 fix src/                    # Alias with version');
         $output->writeln('');
 
         return Command::SUCCESS;

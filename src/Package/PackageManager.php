@@ -36,6 +36,13 @@ class PackageManager
         ]
     ];
 
+    private array $pharAliases = [
+        'cs-fixer' => 'php-cs-fixer.phar',
+        'phpunit' => 'phpunit.phar',
+        'phpstan' => 'phpstan.phar',
+        'composer' => 'composer.phar'
+    ];
+
     public function __construct(bool $debug = false)
     {
         $this->cacheDir = $this->getCacheDir();
@@ -77,18 +84,40 @@ class PackageManager
         return new Package($packageDir);
     }
 
+    private function resolveAlias(string $name): string
+    {
+        // If it's already a .phar file, return as is
+        if (str_ends_with(strtolower($name), '.phar')) {
+            return $name;
+        }
+
+        // Check if it's an alias
+        if (isset($this->pharAliases[$name])) {
+            return $this->pharAliases[$name];
+        }
+
+        // Check if it's an alias without .phar
+        $nameWithPhar = $name . '.phar';
+        if (isset($this->knownPhars[$nameWithPhar])) {
+            return $nameWithPhar;
+        }
+
+        return $name;
+    }
+
     private function isPhar(string $packageSpec): bool
     {
         // Split by version separator and check the base name
         $parts = explode(':', $packageSpec);
-        return str_ends_with(strtolower($parts[0]), '.phar');
+        $name = $this->resolveAlias($parts[0]);
+        return str_ends_with(strtolower($name), '.phar');
     }
 
     private function handlePhar(string $pharPath): Package
     {
         // Parse PHAR name and version
         $parts = explode(':', $pharPath);
-        $pharName = basename($parts[0]);
+        $pharName = $this->resolveAlias(basename($parts[0]));
         $requestedVersion = $parts[1] ?? 'latest';
 
         // Get base directory for PHAR cache
@@ -228,5 +257,10 @@ class PackageManager
     public function getKnownPhars(): array
     {
         return $this->knownPhars;
+    }
+
+    public function getPharAliases(): array
+    {
+        return $this->pharAliases;
     }
 }

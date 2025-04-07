@@ -94,16 +94,16 @@ phpx phpunit/phpunit:^9.0 --version
 
 ### Execute a PHAR file:
 
-PHPX can execute PHAR files in two ways:
+PHPX can execute PHAR files in three ways:
 
 1. From a local file:
 ```bash
 phpx path/to/your-tool.phar [arguments]
 ```
 
-2. Using known PHAR files:
+2. Using known PHAR files (full name):
 ```bash
-# List available PHAR files and their versions
+# List available PHAR files and their aliases
 phpx list-phars
 
 # Execute a known PHAR (latest version)
@@ -111,8 +111,23 @@ phpx php-cs-fixer.phar fix src/
 
 # Execute a specific version
 phpx php-cs-fixer.phar:3.26 fix src/
-phpx phpunit.phar:9 --filter MyTest
 ```
+
+3. Using aliases (shorter form):
+```bash
+# Using alias (latest version)
+phpx cs-fixer fix src/
+
+# Using alias with version
+phpx cs-fixer:3.26 fix src/
+phpx phpunit:9 --filter MyTest
+```
+
+Built-in aliases include:
+- `cs-fixer` → `php-cs-fixer.phar`
+- `phpunit` → `phpunit.phar`
+- `phpstan` → `phpstan.phar`
+- `composer` → `composer.phar`
 
 For known PHARs (like PHP CS Fixer, PHPUnit, etc.), PHPX will:
 - First check if the PHAR exists in your current directory
