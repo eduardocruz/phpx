@@ -177,3 +177,13 @@ The project follows PHP best practices:
 ## License
 
 MIT
+
+## 🚀 Support phpx
+
+If you found **phpx** helpful, believe in its potential, or simply want to support meaningful open-source contributions, please consider becoming a sponsor. Your support helps sustain continuous improvements, new features, and ongoing maintenance.
+
+Whether you're actively using **phpx**, exploring its possibilities, or just excited by its mission—your contribution makes a significant difference.
+
+👉 [Become a Sponsor](https://github.com/sponsors/eduardocruz)
+
+Thank you for empowering open source!
