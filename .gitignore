@@ -11,6 +11,7 @@ composer.lock
 # IDEs and editors
 .idea/
 .vscode/
+.cursor/
 *.sublime-project
 *.sublime-workspace
 *.swp
