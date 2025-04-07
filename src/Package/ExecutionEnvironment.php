@@ -11,11 +11,13 @@ class ExecutionEnvironment
 {
     private Package $package;
     private bool $debug;
+    private string $originalWorkingDir;
 
     public function __construct(Package $package, bool $debug = false)
     {
         $this->package = $package;
         $this->debug = $debug;
+        $this->originalWorkingDir = getcwd() ?: '.';
     }
 
     public function execute(array $args = []): int
@@ -25,6 +27,7 @@ class ExecutionEnvironment
         if ($this->debug) {
             echo "Executable: $executable\n";
             echo "Arguments: " . implode(' ', $args) . "\n";
+            echo "Original working directory: {$this->originalWorkingDir}\n";
         }
         
         // Prepare command
@@ -48,9 +51,10 @@ class ExecutionEnvironment
         }
 
         // Create and configure process
+        // CRITICAL FIX: Use the original working directory instead of the package path
         $process = new Process(
             $command,
-            $this->package->getPath(),
+            $this->originalWorkingDir, // Changed from $this->package->getPath() to use the original dir
             $this->getEnvironment()
         );
 
@@ -74,12 +78,14 @@ class ExecutionEnvironment
 
     private function getEnvironment(): array
     {
+        // Add package bin directory to the PATH
         $path = $this->package->getPath() . '/vendor/bin:' . getenv('PATH');
         
         return array_merge($_SERVER, [
             'PHPX_PACKAGE_PATH' => $this->package->getPath(),
             'PATH' => $path,
             'COMPOSER_VENDOR_DIR' => $this->package->getPath() . '/vendor',
+            'PWD' => $this->originalWorkingDir, // Ensure PWD is set to the original directory
         ]);
     }
 }
