@@ -3,10 +3,27 @@
 
 declare(strict_types=1);
 
-if (file_exists(__DIR__ . '/../../../autoload.php')) {
-    require __DIR__ . '/../../../autoload.php';
-} else {
-    require __DIR__ . '/../vendor/autoload.php';
+// Locate Composer's autoloader
+$autoloadPaths = [
+    // Local development - package itself
+    __DIR__ . '/../vendor/autoload.php',
+    
+    // Global installation through Composer
+    __DIR__ . '/../../../autoload.php',
+];
+
+$loaded = false;
+foreach ($autoloadPaths as $file) {
+    if (file_exists($file)) {
+        require $file;
+        $loaded = true;
+        break;
+    }
+}
+
+if (!$loaded) {
+    fwrite(STDERR, "Error: Unable to find Composer's autoloader. Please run 'composer install' first.\n");
+    exit(1);
 }
 
 use PHPX\Console\Application;
