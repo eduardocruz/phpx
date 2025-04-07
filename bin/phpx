@@ -33,9 +33,13 @@ if (!$loaded) {
 use PHPX\Console\Application;
 use PHPX\Package\PackageManager;
 use PHPX\Package\ExecutionEnvironment;
+use PHPX\Console\Command\ListPharsCommand;
+use PHPX\Console\Command\PharVersionsCommand;
 
 // Create the application
 $application = new Application();
+$application->add(new ListPharsCommand());
+$application->add(new PharVersionsCommand());
 
 // If no arguments or first argument starts with -, use Symfony Console
 if (count($argv) === 1 || $argv[1][0] === '-' || $argv[1] === 'list' || $argv[1] === 'list-phars' || $argv[1] === 'help') {

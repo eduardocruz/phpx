@@ -103,11 +103,15 @@ phpx path/to/your-tool.phar [arguments]
 
 2. Using known PHAR files:
 ```bash
-# List available PHAR files
+# List available PHAR files and their versions
 phpx list-phars
 
-# Execute a known PHAR (will be downloaded and cached automatically)
+# Execute a known PHAR (latest version)
 phpx php-cs-fixer.phar fix src/
+
+# Execute a specific version
+phpx php-cs-fixer.phar:3.26 fix src/
+phpx phpunit.phar:9 --filter MyTest
 ```
 
 For known PHARs (like PHP CS Fixer, PHPUnit, etc.), PHPX will:
@@ -115,6 +119,31 @@ For known PHARs (like PHP CS Fixer, PHPUnit, etc.), PHPX will:
 - If not found locally, automatically download it from the official source
 - Cache it in `~/.cache/phpx/phars/` for future use
 - Execute it with your provided arguments
+
+### Version Specification
+
+PHPX supports version specification for both Composer packages and PHAR files:
+
+1. Composer packages:
+```bash
+phpx phpunit/phpunit:^9.0 --version    # Semver constraint
+phpx phpstan/phpstan:1.10.* analyse    # Version pattern
+```
+
+2. PHAR files:
+```bash
+phpx php-cs-fixer.phar:3.26 fix        # Specific version
+phpx phpunit.phar:9 --filter Test      # Major version
+phpx composer.phar:2 install           # Major version
+phpx php-cs-fixer.phar:latest fix      # Latest version (default)
+```
+
+Available versions for each PHAR can be viewed using:
+```bash
+phpx list-phars
+```
+
+Each version is cached separately, allowing you to have multiple versions of the same tool available locally.
 
 ## Features
 
