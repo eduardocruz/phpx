@@ -37,32 +37,46 @@ echo 'export PATH="$PATH:/path/to/phpx/bin"' >> ~/.zshrc
 
 ## Usage
 
-Execute a Composer package:
+### Execute a Composer package:
 ```bash
 phpx vendor/package[:version] [arguments]
 ```
 
-Execute a PHAR file:
-```bash
-phpx path/to/file.phar [arguments]
-```
-
-Examples:
+Example:
 ```bash
 # Run PHPUnit without installing it globally
 phpx phpunit/phpunit:^9.0 --version
+```
 
-# Run PHP-CS-Fixer
-phpx friendsofphp/php-cs-fixer fix src/
+### Execute a PHAR file:
 
-# Run a PHAR file
+PHPX can execute PHAR files in two ways:
+
+1. From a local file:
+```bash
+phpx path/to/your-tool.phar [arguments]
+```
+
+2. Using known PHAR files:
+```bash
+# List available PHAR files
+phpx list-phars
+
+# Execute a known PHAR (will be downloaded and cached automatically)
 phpx php-cs-fixer.phar fix src/
 ```
+
+For known PHARs (like PHP CS Fixer, PHPUnit, etc.), PHPX will:
+- First check if the PHAR exists in your current directory
+- If not found locally, automatically download it from the official source
+- Cache it in `~/.cache/phpx/phars/` for future use
+- Execute it with your provided arguments
 
 ## Features
 
 - Execute Composer packages without global installation
-- Run PHAR files directly
+- Run PHAR files directly (both local and known PHARs)
+- Automatic PHAR download and caching for known tools
 - Automatic dependency resolution
 - Package version selection
 - Caching for better performance
@@ -70,7 +84,11 @@ phpx php-cs-fixer.phar fix src/
 
 ## Cache
 
-PHPX caches downloaded packages in `~/.cache/phpx/` (or `$XDG_CACHE_HOME/phpx/` if set). You can safely delete this directory to clear the cache.
+PHPX caches downloaded packages and PHARs in:
+- Packages: `~/.cache/phpx/` (or `$XDG_CACHE_HOME/phpx/` if set)
+- PHARs: `~/.cache/phpx/phars/`
+
+You can safely delete these directories to clear the cache.
 
 ## Security
 
@@ -79,6 +97,7 @@ PHPX is designed with security in mind:
 - No arbitrary directory traversal
 - Proper permission handling
 - Safe package execution environment
+- Downloads PHARs only from official sources
 
 ## Troubleshooting
 

@@ -12,6 +12,13 @@ class PackageManager
     private Filesystem $filesystem;
     private bool $debug;
 
+    private array $knownPhars = [
+        'php-cs-fixer.phar' => 'https://cs.symfony.com/download/php-cs-fixer-v3.phar',
+        'phpunit.phar' => 'https://phar.phpunit.de/phpunit-latest.phar',
+        'composer.phar' => 'https://getcomposer.org/composer.phar',
+        'phpstan.phar' => 'https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar'
+    ];
+
     public function __construct(bool $debug = false)
     {
         $this->cacheDir = $this->getCacheDir();
@@ -60,14 +67,44 @@ class PackageManager
 
     private function handlePhar(string $pharPath): Package
     {
-        if (!file_exists($pharPath)) {
-            throw new \RuntimeException("PHAR file not found: $pharPath");
+        $pharName = basename($pharPath);
+        $pharDir = $this->cacheDir . '/phars/' . basename($pharPath, '.phar');
+
+        // If it's a known PHAR and file doesn't exist locally, try to download it
+        if (!file_exists($pharPath) && isset($this->knownPhars[$pharName])) {
+            if ($this->debug) {
+                echo "PHAR not found locally, downloading from {$this->knownPhars[$pharName]}\n";
+            }
+
+            if (!$this->filesystem->exists($pharDir)) {
+                $this->filesystem->mkdir($pharDir);
+            }
+
+            $downloadedPhar = $pharDir . '/' . $pharName;
+            $success = @file_get_contents($this->knownPhars[$pharName]);
+
+            if ($success === false) {
+                throw new \RuntimeException("Failed to download PHAR from {$this->knownPhars[$pharName]}");
+            }
+
+            file_put_contents($downloadedPhar, $success);
+            chmod($downloadedPhar, 0755); // Make executable
+
+            if ($this->debug) {
+                echo "Successfully downloaded PHAR to $downloadedPhar\n";
+            }
+
+            return new Package($pharDir, true);
         }
 
-        $pharDir = $this->cacheDir . '/phars/' . basename($pharPath, '.phar');
+        // Original local file handling
+        if (!file_exists($pharPath)) {
+            throw new \RuntimeException("PHAR file not found: $pharPath and not recognized as a known PHAR");
+        }
+
         if (!$this->filesystem->exists($pharDir)) {
             $this->filesystem->mkdir($pharDir);
-            copy($pharPath, $pharDir . '/' . basename($pharPath));
+            copy($pharPath, $pharDir . '/' . $pharName);
         }
 
         return new Package($pharDir, true);
@@ -155,5 +192,10 @@ class PackageManager
             ?: (getenv('HOME') . '/.cache');
 
         return $baseDir . '/phpx';
+    }
+
+    public function getKnownPhars(): array
+    {
+        return $this->knownPhars;
     }
 }

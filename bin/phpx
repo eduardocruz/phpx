@@ -30,44 +30,48 @@ if (!$loaded) {
     exit(1);
 }
 
-// If we're being run directly (not through the symfony console framework)
-if (count($argv) > 1) {
-    // Skip the script name
-    array_shift($argv);
-    
-    $packageSpec = array_shift($argv);
-    $verbose = in_array('-v', $argv) || in_array('--verbose', $argv);
-    
-    // Remove verbose flags from args if present
-    $args = array_filter($argv, function($arg) {
-        return $arg !== '-v' && $arg !== '--verbose';
-    });
-    
-    try {
-        if ($verbose) {
-            echo "Resolving package: $packageSpec\n";
-        }
-        
-        $packageManager = new PHPX\Package\PackageManager();
-        $package = $packageManager->resolvePackage($packageSpec);
-        
-        if ($verbose) {
-            echo "Package resolved to: " . $package->getPath() . "\n";
-            echo "Executing package...\n";
-        }
-        
-        $environment = new PHPX\Package\ExecutionEnvironment($package);
-        exit($environment->execute($args));
-    } catch (Exception $e) {
-        fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
-        if ($verbose) {
-            fwrite(STDERR, "Stack trace:\n" . $e->getTraceAsString() . "\n");
-        }
-        exit(1);
-    }
+use PHPX\Console\Application;
+use PHPX\Package\PackageManager;
+use PHPX\Package\ExecutionEnvironment;
+
+// Create the application
+$application = new Application();
+
+// If no arguments or first argument starts with -, use Symfony Console
+if (count($argv) === 1 || $argv[1][0] === '-' || $argv[1] === 'list' || $argv[1] === 'list-phars' || $argv[1] === 'help') {
+    $application->run();
+    exit(0);
 }
 
-// Otherwise, use the Symfony Console application
-use PHPX\Console\Application;
-$application = new Application();
-$application->run();
+// Otherwise, treat as direct package execution
+array_shift($argv); // Skip the script name
+$packageSpec = array_shift($argv);
+$verbose = in_array('-v', $argv) || in_array('--verbose', $argv);
+
+// Remove verbose flags from args if present
+$args = array_filter($argv, function($arg) {
+    return $arg !== '-v' && $arg !== '--verbose';
+});
+
+try {
+    if ($verbose) {
+        echo "Resolving package: $packageSpec\n";
+    }
+    
+    $packageManager = new PackageManager($verbose);
+    $package = $packageManager->resolvePackage($packageSpec);
+    
+    if ($verbose) {
+        echo "Package resolved to: " . $package->getPath() . "\n";
+        echo "Executing package...\n";
+    }
+    
+    $environment = new ExecutionEnvironment($package, $verbose);
+    exit($environment->execute($args));
+} catch (Exception $e) {
+    fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
+    if ($verbose) {
+        fwrite(STDERR, "Stack trace:\n" . $e->getTraceAsString() . "\n");
+    }
+    exit(1);
+}
