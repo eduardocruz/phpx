@@ -3,6 +3,10 @@
 
 declare(strict_types=1);
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Locate Composer's autoloader
 $autoloadPaths = [
     // Local development - package itself
@@ -26,7 +30,44 @@ if (!$loaded) {
     exit(1);
 }
 
-use PHPX\Console\Application;
+// If we're being run directly (not through the symfony console framework)
+if (count($argv) > 1) {
+    // Skip the script name
+    array_shift($argv);
+    
+    $packageSpec = array_shift($argv);
+    $verbose = in_array('-v', $argv) || in_array('--verbose', $argv);
+    
+    // Remove verbose flags from args if present
+    $args = array_filter($argv, function($arg) {
+        return $arg !== '-v' && $arg !== '--verbose';
+    });
+    
+    try {
+        if ($verbose) {
+            echo "Resolving package: $packageSpec\n";
+        }
+        
+        $packageManager = new PHPX\Package\PackageManager();
+        $package = $packageManager->resolvePackage($packageSpec);
+        
+        if ($verbose) {
+            echo "Package resolved to: " . $package->getPath() . "\n";
+            echo "Executing package...\n";
+        }
+        
+        $environment = new PHPX\Package\ExecutionEnvironment($package);
+        exit($environment->execute($args));
+    } catch (Exception $e) {
+        fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
+        if ($verbose) {
+            fwrite(STDERR, "Stack trace:\n" . $e->getTraceAsString() . "\n");
+        }
+        exit(1);
+    }
+}
 
+// Otherwise, use the Symfony Console application
+use PHPX\Console\Application;
 $application = new Application();
 $application->run();

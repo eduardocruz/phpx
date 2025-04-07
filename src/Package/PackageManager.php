@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace PHPX\Package;
 
-use Composer\Factory;
-use Composer\IO\NullIO;
 use Symfony\Component\Filesystem\Filesystem;
 
 class PackageManager
 {
     private string $cacheDir;
     private Filesystem $filesystem;
+    private bool $debug;
 
-    public function __construct()
+    public function __construct(bool $debug = false)
     {
         $this->cacheDir = $this->getCacheDir();
         $this->filesystem = new Filesystem();
+        $this->debug = $debug;
         
         if (!$this->filesystem->exists($this->cacheDir)) {
             $this->filesystem->mkdir($this->cacheDir);
@@ -35,8 +35,19 @@ class PackageManager
         
         // Check if package is already cached
         $packageDir = $this->getCachePathForPackage($name, $version);
+        
+        if ($this->debug) {
+            echo "Package cache path: $packageDir\n";
+        }
+        
         if (!$this->filesystem->exists($packageDir)) {
+            if ($this->debug) {
+                echo "Package not found in cache, installing...\n";
+            }
+            
             $this->installPackage($name, $version, $packageDir);
+        } else if ($this->debug) {
+            echo "Package found in cache\n";
         }
 
         return new Package($packageDir);
@@ -73,30 +84,62 @@ class PackageManager
 
     private function installPackage(string $name, ?string $version, string $targetDir): void
     {
-        $composer = Factory::create(new NullIO());
-        $package = $composer->getRepositoryManager()
-            ->findPackage($name, $version ?? '*');
-
-        if (!$package) {
-            throw new \RuntimeException("Package not found: $name" . ($version ? ":$version" : ''));
-        }
-
         // Create temporary composer.json
         $tempDir = sys_get_temp_dir() . '/phpx_' . uniqid();
         $this->filesystem->mkdir($tempDir);
 
-        file_put_contents($tempDir . '/composer.json', json_encode([
+        $composerJson = [
             'require' => [
                 $name => $version ?? '*'
             ]
-        ]));
+        ];
 
-        // Install package
-        $composer = Factory::create(new NullIO(), $tempDir . '/composer.json');
-        $composer->install();
+        file_put_contents($tempDir . '/composer.json', json_encode($composerJson));
 
-        // Move to cache
-        $this->filesystem->mirror($tempDir . '/vendor/' . $name, $targetDir);
+        if ($this->debug) {
+            echo "Created temporary composer.json in $tempDir\n";
+        }
+
+        // Run composer install in temp directory
+        $command = sprintf(
+            'cd %s && composer install --no-dev --no-interaction 2>&1',
+            escapeshellarg($tempDir)
+        );
+        
+        if ($this->debug) {
+            echo "Running: $command\n";
+        }
+        
+        exec($command, $output, $returnCode);
+
+        if ($returnCode !== 0) {
+            $this->filesystem->remove($tempDir);
+            throw new \RuntimeException("Failed to install package: " . implode("\n", $output));
+        }
+
+        // Move installed package to cache
+        $vendorPackageDir = $tempDir . '/vendor/' . $name;
+        
+        if (!is_dir($vendorPackageDir)) {
+            // Try to find the actual package directory
+            if ($this->debug) {
+                echo "Package directory not found at expected path, searching...\n";
+                echo "Contents of vendor directory:\n";
+                system("ls -la $tempDir/vendor");
+            }
+            
+            $this->filesystem->remove($tempDir);
+            throw new \RuntimeException("Package directory not found after installation");
+        }
+
+        // Also copy vendor directory to ensure dependencies are available
+        $this->filesystem->mirror($vendorPackageDir, $targetDir);
+        $this->filesystem->mirror($tempDir . '/vendor', $targetDir . '/vendor');
+        
+        if ($this->debug) {
+            echo "Copied package to cache: $targetDir\n";
+        }
+        
         $this->filesystem->remove($tempDir);
     }
 
