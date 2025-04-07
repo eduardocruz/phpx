@@ -2,18 +2,62 @@
 
 PHPX is an NPX-like package execution tool for PHP. It allows you to execute PHP packages and PHAR files without installing them globally.
 
+## Initial Motivation
+
+PHPX was inspired by similar tools in other ecosystems:
+- `npx` for Node.js (https://github.com/npm/npx) - Executes Node.js packages
+- `uvx` for Python (https://github.com/astral-sh/uv) - Executes Python packages
+
+The Model Context Protocol (MCP) is an open protocol that enables seamless integration between LLM applications and external data sources and tools. Modern AI-powered code editors like Cursor, Windsurf, and Claude Desktop use MCP Servers to provide AI capabilities in development environments.
+
+Having package execution tools like `npx` and `uvx` allows developers to easily run MCP Servers without permanent installation. However, PHP lacked such a tool, creating a gap for PHP developers working with AI-assisted coding tools.
+
+PHPX was created to bridge this gap, enabling PHP projects to be easily integrated with the AI-assisted development ecosystem, particularly when working with MCP-compatible editors and tools (https://github.com/modelcontextprotocol/servers).
+
+## Why PHPX?
+
+Even if you already have Composer and your common PHP tools installed, PHPX offers several advantages:
+
+### Use Cases and Benefits
+
+1. **Try Before You Install**
+   - Test new tools without adding them to your project
+   - `phpx phpstan/phpstan analyse src/` without modifying composer.json
+
+2. **Version Flexibility**
+   - Use different versions of tools without changing your project requirements
+   - `phpx phpunit/phpunit:9.6 --test-suffix=...` for a one-off run with a specific version
+
+3. **Standardized CI Environments**
+   - Ensure everyone uses the same version of tools regardless of local installations
+   - `phpx friendsofphp/php-cs-fixer:3.15 fix src/` in CI scripts
+
+4. **Project Isolation**
+   - Keep analysis tools separate from your project's runtime dependencies
+   - Avoid dependency conflicts between your code and tool requirements
+
+5. **Training and Onboarding**
+   - Let new team members use standard tools without complex setup
+   - Share commands that work regardless of local environment
+
+6. **One-off Command Execution**
+   - Run infrequently used tools without permanent installation
+   - `phpx ramsey/uuid-console gen` to generate a UUID once
+
+PHPX stands out from alternatives by using Composer's dependency resolution, providing access to any package on Packagist, and handling both Composer packages and PHAR files seamlessly.
+
 ## Installation
 
 ### Option 1: Global Installation (Recommended)
 ```bash
-composer global require phpx/phpx
+composer global require eduardocruz/phpx
 ```
 This will automatically make the `phpx` command available in your system if your global Composer bin directory is in your PATH.
 
 ### Option 2: Manual Installation
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/phpx.git
+git clone https://github.com/eduardocruz/phpx.git
 cd phpx
 ```
 
