@@ -13,10 +13,27 @@ class PackageManager
     private bool $debug;
 
     private array $knownPhars = [
-        'php-cs-fixer.phar' => 'https://cs.symfony.com/download/php-cs-fixer-v3.phar',
-        'phpunit.phar' => 'https://phar.phpunit.de/phpunit-latest.phar',
-        'composer.phar' => 'https://getcomposer.org/composer.phar',
-        'phpstan.phar' => 'https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar'
+        'php-cs-fixer.phar' => [
+            'latest' => 'https://cs.symfony.com/download/php-cs-fixer-v3.phar',
+            'v3' => 'https://cs.symfony.com/download/php-cs-fixer-v3.phar',
+            '3.26' => 'https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.26.0/php-cs-fixer.phar',
+            '3.25' => 'https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.25.1/php-cs-fixer.phar',
+            '3.24' => 'https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/download/v3.24.0/php-cs-fixer.phar'
+        ],
+        'phpunit.phar' => [
+            'latest' => 'https://phar.phpunit.de/phpunit-latest.phar',
+            '10' => 'https://phar.phpunit.de/phpunit-10.phar',
+            '9' => 'https://phar.phpunit.de/phpunit-9.phar',
+            '8' => 'https://phar.phpunit.de/phpunit-8.phar'
+        ],
+        'composer.phar' => [
+            'latest' => 'https://getcomposer.org/composer.phar',
+            '2' => 'https://getcomposer.org/composer-2.phar',
+            '1' => 'https://getcomposer.org/composer-1.phar'
+        ],
+        'phpstan.phar' => [
+            'latest' => 'https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar'
+        ]
     ];
 
     public function __construct(bool $debug = false)
@@ -62,39 +79,53 @@ class PackageManager
 
     private function isPhar(string $packageSpec): bool
     {
-        return str_ends_with(strtolower($packageSpec), '.phar');
+        // Split by version separator and check the base name
+        $parts = explode(':', $packageSpec);
+        return str_ends_with(strtolower($parts[0]), '.phar');
     }
 
     private function handlePhar(string $pharPath): Package
     {
-        $pharName = basename($pharPath);
-        $pharDir = $this->cacheDir . '/phars/' . basename($pharPath, '.phar');
+        // Parse PHAR name and version
+        $parts = explode(':', $pharPath);
+        $pharName = basename($parts[0]);
+        $requestedVersion = $parts[1] ?? 'latest';
+
+        // Get base directory for PHAR cache
+        $pharBaseDir = $this->cacheDir . '/phars/' . basename($pharName, '.phar');
+        $pharVersionDir = $pharBaseDir . '/' . $requestedVersion;
 
         // If it's a known PHAR and file doesn't exist locally, try to download it
         if (!file_exists($pharPath) && isset($this->knownPhars[$pharName])) {
+            if (!isset($this->knownPhars[$pharName][$requestedVersion])) {
+                throw new \RuntimeException("Version '$requestedVersion' not found for PHAR '$pharName'");
+            }
+
+            $downloadUrl = $this->knownPhars[$pharName][$requestedVersion];
+
             if ($this->debug) {
-                echo "PHAR not found locally, downloading from {$this->knownPhars[$pharName]}\n";
+                echo "PHAR not found locally, downloading version $requestedVersion from $downloadUrl\n";
             }
 
-            if (!$this->filesystem->exists($pharDir)) {
-                $this->filesystem->mkdir($pharDir);
+            if (!$this->filesystem->exists($pharVersionDir)) {
+                $this->filesystem->mkdir($pharVersionDir);
             }
 
-            $downloadedPhar = $pharDir . '/' . $pharName;
-            $success = @file_get_contents($this->knownPhars[$pharName]);
+            $downloadedPhar = $pharVersionDir . '/' . $pharName;
+            $success = @file_get_contents($downloadUrl);
 
             if ($success === false) {
-                throw new \RuntimeException("Failed to download PHAR from {$this->knownPhars[$pharName]}");
+                throw new \RuntimeException("Failed to download PHAR from $downloadUrl");
             }
 
             file_put_contents($downloadedPhar, $success);
             chmod($downloadedPhar, 0755); // Make executable
 
             if ($this->debug) {
-                echo "Successfully downloaded PHAR to $downloadedPhar\n";
+                echo "Successfully downloaded PHAR version $requestedVersion to $downloadedPhar\n";
             }
 
-            return new Package($pharDir, true);
+            return new Package($pharVersionDir, true);
         }
 
         // Original local file handling
@@ -102,12 +133,12 @@ class PackageManager
             throw new \RuntimeException("PHAR file not found: $pharPath and not recognized as a known PHAR");
         }
 
-        if (!$this->filesystem->exists($pharDir)) {
-            $this->filesystem->mkdir($pharDir);
-            copy($pharPath, $pharDir . '/' . $pharName);
+        if (!$this->filesystem->exists($pharVersionDir)) {
+            $this->filesystem->mkdir($pharVersionDir);
+            copy($pharPath, $pharVersionDir . '/' . $pharName);
         }
 
-        return new Package($pharDir, true);
+        return new Package($pharVersionDir, true);
     }
 
     private function parsePackageSpec(string $spec): array

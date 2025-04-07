@@ -30,22 +30,25 @@ class ListPharsCommand extends Command
         $output->writeln('');
 
         $table = new Table($output);
-        $table->setHeaders(['PHAR Name', 'Source URL']);
+        $table->setHeaders(['PHAR Name', 'Available Versions']);
 
-        foreach ($knownPhars as $name => $url) {
-            $table->addRow([$name, $url]);
+        foreach ($knownPhars as $name => $versions) {
+            $versionList = implode(', ', array_keys($versions));
+            $table->addRow([$name, $versionList]);
         }
 
         $table->render();
 
         $output->writeln('');
-        $output->writeln('Usage example:');
-        $output->writeln('  phpx <phar-name> [arguments]');
+        $output->writeln('Usage examples:');
+        $output->writeln('  phpx <phar-name>[:<version>] [arguments]');
         $output->writeln('');
         $output->writeln('For instance:');
-        $output->writeln('  phpx php-cs-fixer.phar fix src/');
+        $output->writeln('  phpx php-cs-fixer.phar fix src/                  # Uses latest version');
+        $output->writeln('  phpx php-cs-fixer.phar:3.26 fix src/            # Uses specific version');
+        $output->writeln('  phpx phpunit.phar:9 --filter MyTest             # Uses PHPUnit 9.x');
         $output->writeln('');
 
         return Command::SUCCESS;
     }
-} 
+}
