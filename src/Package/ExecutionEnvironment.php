@@ -23,16 +23,16 @@ class ExecutionEnvironment
     public function execute(array $args = []): int
     {
         $executable = $this->package->getExecutable();
-        
+
         if ($this->debug) {
             echo "Executable: $executable\n";
             echo "Arguments: " . implode(' ', $args) . "\n";
             echo "Original working directory: {$this->originalWorkingDir}\n";
         }
-        
+
         // Prepare command
         $command = [];
-        
+
         // If it's a PHP file or PHAR, run with PHP
         if ($this->package->isPhar() || str_ends_with($executable, '.php')) {
             $command[] = PHP_BINARY;
@@ -40,12 +40,12 @@ class ExecutionEnvironment
         } else {
             $command[] = $executable;
         }
-        
+
         // Add arguments
         foreach ($args as $arg) {
             $command[] = $arg;
         }
-        
+
         if ($this->debug) {
             echo "Full command: " . implode(' ', $command) . "\n";
         }
@@ -60,13 +60,13 @@ class ExecutionEnvironment
 
         $process->setTimeout(null);
         $process->setTty(false); // Disable TTY mode for better compatibility
-        
+
         try {
             // Run the process and output directly
             $process->mustRun(function ($type, $buffer) {
                 echo $buffer;
             });
-            
+
             return $process->getExitCode();
         } catch (ProcessFailedException $e) {
             if ($this->debug) {
@@ -80,7 +80,7 @@ class ExecutionEnvironment
     {
         // Add package bin directory to the PATH
         $path = $this->package->getPath() . '/vendor/bin:' . getenv('PATH');
-        
+
         return array_merge($_SERVER, [
             'PHPX_PACKAGE_PATH' => $this->package->getPath(),
             'PATH' => $path,

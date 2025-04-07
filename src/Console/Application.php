@@ -12,7 +12,7 @@ class Application extends BaseApplication
     public function __construct()
     {
         parent::__construct('PHPX', '1.0.0');
-        
+
         $this->add(new ExecuteCommand());
     }
 }

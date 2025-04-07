@@ -39,7 +39,7 @@ class ExecuteCommand extends Command
         try {
             $packageManager = new PackageManager();
             $package = $packageManager->resolvePackage($packageSpec);
-            
+
             $environment = new ExecutionEnvironment($package);
             return $environment->execute($args);
         } catch (\Exception $e) {

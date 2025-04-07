@@ -17,7 +17,7 @@ class PackageManager
         $this->cacheDir = $this->getCacheDir();
         $this->filesystem = new Filesystem();
         $this->debug = $debug;
-        
+
         if (!$this->filesystem->exists($this->cacheDir)) {
             $this->filesystem->mkdir($this->cacheDir);
         }
@@ -32,21 +32,21 @@ class PackageManager
 
         // Parse package spec (name and version)
         list($name, $version) = $this->parsePackageSpec($packageSpec);
-        
+
         // Check if package is already cached
         $packageDir = $this->getCachePathForPackage($name, $version);
-        
+
         if ($this->debug) {
             echo "Package cache path: $packageDir\n";
         }
-        
+
         if (!$this->filesystem->exists($packageDir)) {
             if ($this->debug) {
                 echo "Package not found in cache, installing...\n";
             }
-            
+
             $this->installPackage($name, $version, $packageDir);
-        } else if ($this->debug) {
+        } elseif ($this->debug) {
             echo "Package found in cache\n";
         }
 
@@ -105,11 +105,11 @@ class PackageManager
             'cd %s && composer install --no-dev --no-interaction 2>&1',
             escapeshellarg($tempDir)
         );
-        
+
         if ($this->debug) {
             echo "Running: $command\n";
         }
-        
+
         exec($command, $output, $returnCode);
 
         if ($returnCode !== 0) {
@@ -119,7 +119,7 @@ class PackageManager
 
         // Move installed package to cache
         $vendorPackageDir = $tempDir . '/vendor/' . $name;
-        
+
         if (!is_dir($vendorPackageDir)) {
             // Try to find the actual package directory
             if ($this->debug) {
@@ -127,7 +127,7 @@ class PackageManager
                 echo "Contents of vendor directory:\n";
                 system("ls -la $tempDir/vendor");
             }
-            
+
             $this->filesystem->remove($tempDir);
             throw new \RuntimeException("Package directory not found after installation");
         }
@@ -135,25 +135,25 @@ class PackageManager
         // Also copy vendor directory to ensure dependencies are available
         $this->filesystem->mirror($vendorPackageDir, $targetDir);
         $this->filesystem->mirror($tempDir . '/vendor', $targetDir . '/vendor');
-        
+
         if ($this->debug) {
             echo "Copied package to cache: $targetDir\n";
         }
-        
+
         $this->filesystem->remove($tempDir);
     }
 
     private function getCachePathForPackage(string $name, ?string $version): string
     {
-        return $this->cacheDir . '/' . str_replace('/', '_', $name) . 
+        return $this->cacheDir . '/' . str_replace('/', '_', $name) .
                ($version ? '_' . $version : '');
     }
 
     private function getCacheDir(): string
     {
-        $baseDir = getenv('XDG_CACHE_HOME') 
+        $baseDir = getenv('XDG_CACHE_HOME')
             ?: (getenv('HOME') . '/.cache');
-        
+
         return $baseDir . '/phpx';
     }
 }
