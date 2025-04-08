@@ -7,6 +7,8 @@ namespace PHPX\Console;
 use Symfony\Component\Console\Application as BaseApplication;
 use PHPX\Console\Command\ExecuteCommand;
 use PHPX\Console\Command\ListPharsCommand;
+use PHPX\Console\Command\CacheSizeCommand;
+use PHPX\Console\Command\CacheClearCommand;
 
 class Application extends BaseApplication
 {
@@ -16,5 +18,7 @@ class Application extends BaseApplication
 
         $this->add(new ExecuteCommand());
         $this->add(new ListPharsCommand());
+        $this->add(new CacheSizeCommand());
+        $this->add(new CacheClearCommand());
     }
 }
