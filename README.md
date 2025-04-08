@@ -176,7 +176,23 @@ PHPX caches downloaded packages and PHARs in:
 - Packages: `~/.cache/phpx/` (or `$XDG_CACHE_HOME/phpx/` if set)
 - PHARs: `~/.cache/phpx/phars/`
 
-You can safely delete these directories to clear the cache.
+### Cache Management
+
+PHPX provides commands to manage the cache:
+
+```bash
+# View cache size with detailed breakdown
+phpx cache:size
+
+# Clear the cache
+phpx cache:clear
+```
+
+The `cache:size` command displays a table with size information for each package in the cache, sorted from largest to smallest, with a total at the bottom.
+
+The `cache:clear` command removes all cached packages and PHARs after confirmation, freeing up disk space.
+
+You can also manually delete these directories to clear the cache.
 
 ## Security
 
