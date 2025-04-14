@@ -1,6 +1,12 @@
 # PHPX
 
-PHPX is an NPX-like package execution tool for PHP. It allows you to execute PHP packages and PHAR files without installing them globally.
+PHPX is an NPX-like package execution tool for PHP. It allows you to execute PHP packages and PHAR files without installing them globally, featuring a beautiful and user-friendly command-line interface powered by Laravel Prompts.
+
+## Requirements
+
+- PHP 8.1 or higher
+- Composer 2.0 or higher
+- Terminal with support for ANSI escape sequences (for interactive features)
 
 ## Initial Motivation
 
@@ -46,10 +52,28 @@ Even if you already have Composer and your common PHP tools installed, PHPX offe
 
 PHPX stands out from alternatives by using Composer's dependency resolution, providing access to any package on Packagist, and handling both Composer packages and PHAR files seamlessly.
 
+## Features
+
+- Execute Composer packages without global installation
+- Run PHAR files directly (both local and known PHARs)
+- Beautiful interactive command-line interface powered by Laravel Prompts
+- Smart package search and selection
+- Progress indicators for long-running operations
+- User-friendly error messages and confirmations
+- Automatic PHAR download and caching for known tools
+- Automatic dependency resolution
+- Package version selection
+- Caching for better performance
+- Clean execution environment for each run
+
 ## Installation
 
 ### Option 1: Global Installation (Recommended)
 ```bash
+# Ensure you have PHP 8.1 or higher installed
+php -v
+
+# Install PHPX globally
 composer global require eduardocruz/phpx
 ```
 This will automatically make the `phpx` command available in your system if your global Composer bin directory is in your PATH.
@@ -160,15 +184,38 @@ phpx list-phars
 
 Each version is cached separately, allowing you to have multiple versions of the same tool available locally.
 
-## Features
+## Interactive Features
 
-- Execute Composer packages without global installation
-- Run PHAR files directly (both local and known PHARs)
-- Automatic PHAR download and caching for known tools
-- Automatic dependency resolution
-- Package version selection
-- Caching for better performance
-- Clean execution environment for each run
+PHPX provides an enhanced user experience with interactive features powered by Laravel Prompts:
+
+1. **Smart Package Selection**
+   - Search and filter packages interactively
+   - View package details and versions before installation
+   - Auto-completion for package names
+
+2. **Progress Indicators**
+   - Visual progress bars for package downloads
+   - Spinners for long-running operations
+   - Clear status updates during execution
+
+3. **User-Friendly Prompts**
+   - Interactive version selection
+   - Confirmation dialogs for important actions
+   - Beautiful error messages with helpful suggestions
+
+4. **Cache Management**
+   - Interactive cache browsing and cleanup
+   - Visual size indicators
+   - Selective cache clearing
+
+### Non-Interactive Mode
+
+For CI/CD environments or scripting, all interactive features can be bypassed using command-line arguments or the `--no-interaction` flag:
+
+```bash
+# Non-interactive execution
+phpx --no-interaction phpunit/phpunit:^9.0 --version
+```
 
 ## Cache
 
