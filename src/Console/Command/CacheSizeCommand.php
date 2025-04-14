@@ -7,8 +7,8 @@ namespace PHPX\Console\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Helper\Table;
 use PHPX\Package\PackageManager;
+use function Laravel\Prompts\{table, confirm, spin};
 
 class CacheSizeCommand extends Command
 {
@@ -30,44 +30,59 @@ class CacheSizeCommand extends Command
             return Command::FAILURE;
         }
 
-        $totalSize = $this->getDirectorySize($cacheDir);
-        $formattedTotalSize = $this->formatSize($totalSize);
+        // Calculate sizes with a spinner
+        $rows = [];
+        $totalSize = spin(function() use ($cacheDir, &$rows) {
+            $total = $this->getDirectorySize($cacheDir);
+            
+            // Get all files recursively
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($cacheDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            );
+            
+            foreach ($files as $file) {
+                if ($file->isFile()) {
+                    $size = $file->getSize();
+                    $formattedSize = $this->formatSize($size);
+                    // Get path relative to cache directory
+                    $relativePath = substr($file->getPathname(), strlen($cacheDir) + 1);
+                    $rows[] = [$formattedSize, $relativePath];
+                }
+            }
+            
+            // Sort rows by size (descending)
+            usort($rows, function($a, $b) {
+                return $this->compareSizes($b[0], $a[0]);
+            });
+            
+            return $total;
+        }, 'Calculating cache sizes...');
 
+        $formattedTotalSize = $this->formatSize($totalSize);
+        
         $output->writeln('');
         $output->writeln("<info>PHPX Cache Directory:</info> $cacheDir");
         $output->writeln('');
 
-        // Prepare and display the table
-        $table = new Table($output);
-        $table->setHeaders(['Size', 'Package']);
-        
-        $rows = [];
-        $subdirs = glob($cacheDir . '/*', GLOB_ONLYDIR);
-        
-        foreach ($subdirs as $dir) {
-            $dirSize = $this->getDirectorySize($dir);
-            $dirFormattedSize = $this->formatSize($dirSize);
-            $dirName = basename($dir);
-            $rows[] = [$dirFormattedSize, $dirName];
-        }
-        
-        // Sort rows by size (descending)
-        usort($rows, function($a, $b) {
-            return $this->compareSizes($b[0], $a[0]);
-        });
-        
-        foreach ($rows as $row) {
-            $table->addRow($row);
-        }
-        
-        // Add a separator and total row
-        $table->addRow(new \Symfony\Component\Console\Helper\TableSeparator());
-        $table->addRow(["<options=bold>$formattedTotalSize</>", '<options=bold>TOTAL</>']);
-        
-        $table->render();
+        // Display the table using Laravel Prompts
+        table(
+            ['Size', 'File'], 
+            array_merge(
+                $rows,
+                [['---', '---']],
+                [[$formattedTotalSize, 'TOTAL']]
+            )
+        );
         
         $output->writeln('');
-        $output->writeln('To clear the cache, you can safely delete this directory.');
+        
+        // Add confirmation prompt for cache clearing
+        if (confirm('Would you like to clear the cache?')) {
+            $output->writeln('To clear the cache, run: rm -rf ' . escapeshellarg($cacheDir));
+        } else {
+            $output->writeln('Cache left intact.');
+        }
         $output->writeln('');
 
         return Command::SUCCESS;
