@@ -246,12 +246,22 @@ class PackageManager
                ($version ? '_' . $version : '');
     }
 
+    /**
+     * Get the cache directory path for PHPX.
+     * 
+     * Uses ~/.phpx/cache instead of ~/.cache/phpx to:
+     * 1. Maintain isolation from globally installed packages
+     * 2. Avoid conflicts with system-wide PHARs and Composer packages
+     * 3. Make it clear these PHARs are managed by PHPX specifically
+     * 4. Simplify cleanup and version management
+     * 
+     * This aligns with PHPX's goal of providing non-conflicting PHAR management
+     * while maintaining clear separation from global package installations.
+     */
     private function getCacheDir(): string
     {
-        $baseDir = getenv('XDG_CACHE_HOME')
-            ?: (getenv('HOME') . '/.cache');
-
-        return $baseDir . '/phpx';
+        $homeDir = getenv('HOME') ?: getenv('USERPROFILE');
+        return $homeDir . '/.phpx/cache';
     }
 
     public function getKnownPhars(): array
