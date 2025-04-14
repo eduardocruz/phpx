@@ -1,0 +1,123 @@
+<context>
+# Overview  
+PHPX is an NPX-like package execution tool for PHP that allows developers to execute PHP packages and PHAR files without installing them globally. It bridges the gap for PHP developers working with AI-assisted coding tools and provides a seamless way to try, use, and manage PHP packages across different environments. The next priority is to enhance the user experience by integrating Laravel Prompts, providing beautiful and user-friendly command-line forms.
+
+# Core Features  
+- **Package Execution**: Execute Composer packages without global installation
+- **PHAR File Management**: Run PHAR files directly with automatic download and caching for known tools
+- **Version Flexibility**: Select specific versions of packages and tools
+- **Caching System**: Efficient caching for better performance
+- **Clean Execution Environment**: Isolated environment for each run
+- **User-Friendly Interface**: Integration with Laravel Prompts for beautiful CLI interactions
+
+# User Experience  
+- **PHP Developers**: Primary users who need flexibility in package management
+- **DevOps Engineers**: Users who need standardized CI environments
+- **Team Leads**: Users who want to streamline onboarding and training
+- **Key Flows**: Package installation, execution, cache management
+- **UI/UX Considerations**: Command-line interface with enhanced user prompts and feedback
+</context>
+<PRD>
+# Technical Architecture  
+- **System Components**:
+  - Core PHPX Engine: Handles package resolution and execution
+  - CLI Interface: Command-line interface for user interaction
+  - Laravel Prompts Integration: Beautiful CLI forms and interactions
+  - Cache Manager: Handles caching of packages and PHARs
+  - PHAR Downloader: Securely downloads and verifies PHAR files
+
+- **Data Models**:
+  - Package Configuration: Metadata about packages including versions and dependencies
+  - PHAR Registry: Information about known PHAR files and their aliases
+  - User Settings: User preferences and configurations
+
+- **APIs and Integrations**:
+  - Composer API Integration: For package resolution
+  - Laravel Prompts Integration: For enhanced CLI interface
+  - File System Access: For cache management and execution
+  - HTTP Clients: For downloading packages and PHARs
+
+- **Infrastructure Requirements**:
+  - PHP 8.0+ Runtime
+  - Composer
+  - File system access for caching
+  - Internet access for package downloads
+
+# Development Roadmap  
+- **MVP Requirements (Laravel Prompts Integration)**:
+  1. Add Laravel Prompts as a dependency to the project
+  2. Create a PromptManager class to handle user interactions
+  3. Update core command classes to use Laravel Prompts
+  4. Implement interactive package selection with search and filtering
+  5. Add progress indicators for long-running processes
+  6. Enhance error handling with user-friendly error messages
+  7. Add confirmation prompts for destructive actions
+  8. Implement interactive cache management
+
+- **Future Enhancements**:
+  1. Interactive package discovery interface
+  2. Command history and favorites
+  3. Project-specific package configurations
+  4. Integration with more package sources
+  5. Plugin system for extending functionality
+  6. Multi-package execution orchestration
+  7. Telemetry for usage analytics (opt-in)
+
+# Logical Dependency Chain
+1. **Foundation First**:
+   - Add Laravel Prompts as a dependency
+   - Create basic prompt abstractions and utilities
+   - Ensure backward compatibility with existing commands
+
+2. **Quick Wins for Visible Improvements**:
+   - Update the most commonly used commands with Laravel Prompts
+   - Add progress indicators for package downloads and installations
+   - Implement confirmation prompts for cache clearing
+
+3. **Incremental Feature Enhancement**:
+   - Enhance package selection interface
+   - Add interactive PHAR selection
+   - Improve cache management interface
+   - Add interactive help and documentation
+
+4. **Advanced Features**:
+   - Interactive package discovery
+   - Command history and favorites
+   - Telemetry and usage analytics
+
+# Risks and Mitigations  
+- **Technical Challenges**:
+  - **Risk**: Laravel Prompts might not work in all terminal environments
+    - **Mitigation**: Implement fallback mechanisms for unsupported terminals
+  
+  - **Risk**: Performance impact from additional UI layer
+    - **Mitigation**: Ensure lazy loading of UI components and optimized rendering
+
+  - **Risk**: Backward compatibility issues
+    - **Mitigation**: Maintain support for non-interactive mode and existing command formats
+
+- **MVP Scope Management**:
+  - **Risk**: Feature creep beyond essential Laravel Prompts integration
+    - **Mitigation**: Clearly define MVP requirements and maintain focus on core improvements
+
+  - **Risk**: Over-engineering the prompt system
+    - **Mitigation**: Start with simple implementations for common commands before expanding
+
+- **Resource Constraints**:
+  - **Risk**: Learning curve for Laravel Prompts
+    - **Mitigation**: Allocate time for exploration and experimentation
+  
+  - **Risk**: Testing across different environments
+    - **Mitigation**: Set up automated testing for various terminal types and CI environments
+
+# Appendix  
+- **Research Findings**:
+  - Laravel Prompts is actively maintained with regular updates
+  - The package has excellent documentation on laravel.com/docs/prompts
+  - Similar CLI tools have reported significant UX improvements after implementing interactive prompts
+
+- **Technical Specifications**:
+  - Laravel Prompts requires PHP 8.1+ 
+  - It supports features like text input, password input, select menus, confirmations, multiselect, and progress bars
+  - Terminal compatibility includes support for most modern terminal emulators
+</PRD>
