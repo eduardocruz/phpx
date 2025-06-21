@@ -315,7 +315,6 @@ PHPX uses a comprehensive CI/CD pipeline to ensure code quality and reliability:
 
 ### Security Analysis
 
-- **CodeQL**: Automated security vulnerability scanning
 - **Composer Audit**: Dependency security vulnerability checks
 
 
@@ -331,11 +330,6 @@ PHPX uses a comprehensive CI/CD pipeline to ensure code quality and reliability:
    - Triggered on version tags (`v*`)
    - Automated PHAR building and release creation
    - GitHub release with downloadable artifacts
-
-3. **Security Scanning** (`.github/workflows/codeql.yml`)
-   - Weekly scheduled security analysis
-   - Real-time vulnerability detection
-   - Automated security reporting
 
 
 
@@ -363,7 +357,7 @@ composer ci
 - **Test Coverage**: Comprehensive test suite covering core functionality
 - **Code Style**: PSR-12 compliance with additional formatting rules
 
-- **Security**: Regular vulnerability scanning and dependency updates
+- **Security**: Dependency vulnerability scanning and security best practices
 - **Documentation**: Inline documentation and comprehensive README
 
 ## Development
