@@ -14,7 +14,7 @@ class Application extends BaseApplication
 {
     public function __construct()
     {
-        parent::__construct('PHPX', '1.0.0');
+        parent::__construct('PHPX', '0.0.1');
 
         $this->add(new ExecuteCommand());
         $this->add(new ListPharsCommand());
