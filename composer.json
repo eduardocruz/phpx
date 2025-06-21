@@ -36,7 +36,7 @@
     },
     "bin": ["bin/phpx"],
     "scripts": {
-        "test": "phpunit",
+        "test": "phpunit --no-coverage",
         "test-coverage": "phpunit --coverage-html coverage",
 
         "cs-fix": "php-cs-fixer fix",

@@ -6,7 +6,6 @@ namespace PHPX\Tests\Integration;
 
 use PHPX\Tests\TestCase;
 use Symfony\Component\Process\Process;
-use JsonException;
 
 class McpServerTest extends TestCase
 {
@@ -29,31 +28,33 @@ class McpServerTest extends TestCase
     public function testLocalPhpProcessesMcpMessages(): void
     {
         $initMessage = $this->getInitializeMessage();
-        
+
         $process = new Process(['php', $this->testServerPath]);
         $process->setInput($initMessage . "\n");
         $process->run();
 
         $this->assertSame(0, $process->getExitCode(), 'Process should complete successfully');
-        
+
         $output = $process->getOutput();
         $this->assertNotEmpty($output, 'Should receive response from MCP server');
-        
+
         // Parse the JSON response
         $lines = explode("\n", trim($output));
         $validJsonFound = false;
-        
+
         foreach ($lines as $line) {
             $line = trim($line);
+
             if (!empty($line) && $this->isValidJson($line)) {
                 $data = json_decode($line, true);
+
                 if (isset($data['result']['serverInfo'])) {
                     $validJsonFound = true;
                     break;
                 }
             }
         }
-        
+
         $this->assertTrue($validJsonFound, 'Should find valid MCP response with serverInfo');
     }
 
@@ -73,13 +74,13 @@ class McpServerTest extends TestCase
     public function testMcpToolExecution(): void
     {
         $toolMessage = $this->getToolCallMessage();
-        
+
         $process = new Process(['php', $this->testServerPath]);
         $process->setInput($toolMessage . "\n");
         $process->run();
 
         $this->assertSame(0, $process->getExitCode(), 'Tool execution should complete successfully');
-        
+
         $output = $process->getOutput();
         $this->assertNotEmpty($output, 'Should receive tool execution response');
     }
@@ -88,13 +89,13 @@ class McpServerTest extends TestCase
     {
         // Send invalid JSON
         $invalidMessage = '{"invalid": json}';
-        
+
         $process = new Process(['php', $this->testServerPath]);
         $process->setInput($invalidMessage . "\n");
         $process->run();
 
         $this->assertSame(0, $process->getExitCode(), 'Process should handle invalid JSON gracefully');
-        
+
         $output = $process->getOutput();
         $this->assertNotEmpty($output, 'Should receive error response');
     }
@@ -105,7 +106,7 @@ class McpServerTest extends TestCase
         $messages = [
             $this->getInitializeMessage(),
             $this->getToolCallMessage(),
-            $this->getToolCallMessage('test_tool_2')
+            $this->getToolCallMessage('test_tool_2'),
         ];
 
         foreach ($messages as $message) {
@@ -198,7 +199,7 @@ while (($line = fgets(STDIN)) !== false) {
             'name' => 'test/mcp-server',
             'type' => 'project',
             'require' => ['php' => '>=8.1'],
-            'autoload' => ['psr-4' => ['Test\\' => 'src/']]
+            'autoload' => ['psr-4' => ['Test\\' => 'src/']],
         ];
         file_put_contents($tempDir . '/composer.json', json_encode($composerJson, JSON_PRETTY_PRINT));
 
@@ -212,6 +213,7 @@ while (($line = fgets(STDIN)) !== false) {
     {
         if (is_dir($dir)) {
             $files = glob($dir . '/*');
+
             foreach ($files as $file) {
                 if (is_file($file)) {
                     unlink($file);
@@ -230,8 +232,8 @@ while (($line = fgets(STDIN)) !== false) {
             'params' => [
                 'protocolVersion' => '2024-11-05',
                 'capabilities' => ['tools' => true],
-                'clientInfo' => ['name' => 'test-client', 'version' => '1.0.0']
-            ]
+                'clientInfo' => ['name' => 'test-client', 'version' => '1.0.0'],
+            ],
         ]);
     }
 
@@ -243,8 +245,8 @@ while (($line = fgets(STDIN)) !== false) {
             'method' => 'tools/call',
             'params' => [
                 'name' => $toolName,
-                'arguments' => []
-            ]
+                'arguments' => [],
+            ],
         ]);
     }
 
@@ -256,12 +258,15 @@ while (($line = fgets(STDIN)) !== false) {
         while (time() - $startTime < $timeoutSeconds) {
             if ($process->isRunning()) {
                 $output = $process->getIncrementalOutput();
+
                 if (!empty($output)) {
                     $response .= $output;
                     // Check if we have a complete JSON message
                     $lines = explode("\n", trim($response));
+
                     foreach ($lines as $line) {
                         $line = trim($line);
+
                         if (!empty($line) && $this->isValidJson($line)) {
                             return $line;
                         }
@@ -279,6 +284,7 @@ while (($line = fgets(STDIN)) !== false) {
     private function isValidJson(string $string): bool
     {
         json_decode($string);
+
         return json_last_error() === JSON_ERROR_NONE;
     }
-} 
+}

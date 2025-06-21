@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PHPX\Tests\Unit\Package;
 
-use PHPX\Tests\TestCase;
 use PHPX\Package\Package;
+use PHPX\Tests\TestCase;
 
 class PackageTest extends TestCase
 {
@@ -30,20 +30,20 @@ class PackageTest extends TestCase
         // Create a temporary directory with composer.json
         $tempDir = sys_get_temp_dir() . '/phpx_test_' . uniqid();
         mkdir($tempDir);
-        
+
         $composerContent = [
             'name' => 'test/package',
-            'version' => '1.0.0'
+            'version' => '1.0.0',
         ];
         file_put_contents($tempDir . '/composer.json', json_encode($composerContent));
-        
+
         $package = new Package($tempDir, false);
         $composerJson = $package->getComposerJson();
-        
+
         $this->assertIsArray($composerJson);
         $this->assertArrayHasKey('name', $composerJson);
         $this->assertSame('test/package', $composerJson['name']);
-        
+
         // Cleanup
         unlink($tempDir . '/composer.json');
         rmdir($tempDir);
@@ -53,8 +53,8 @@ class PackageTest extends TestCase
     {
         $package = new Package('/nonexistent/path', false);
         $composerJson = $package->getComposerJson();
-        
+
         $this->assertIsArray($composerJson);
         $this->assertEmpty($composerJson);
     }
-} 
+}

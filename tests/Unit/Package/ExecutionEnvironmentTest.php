@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace PHPX\Tests\Unit\Package;
 
-use PHPX\Tests\TestCase;
 use PHPX\Package\ExecutionEnvironment;
 use PHPX\Package\Package;
+use PHPX\Tests\TestCase;
 
 class ExecutionEnvironmentTest extends TestCase
 {
@@ -43,7 +43,7 @@ class ExecutionEnvironmentTest extends TestCase
         // But we can test that the method signature is correct
         $reflection = new \ReflectionMethod($this->environment, 'execute');
         $parameters = $reflection->getParameters();
-        
+
         $this->assertCount(1, $parameters);
         $this->assertSame('args', $parameters[0]->getName());
         $this->assertTrue($parameters[0]->hasType());
@@ -54,9 +54,9 @@ class ExecutionEnvironmentTest extends TestCase
     {
         $reflection = new \ReflectionMethod($this->environment, 'execute');
         $returnType = $reflection->getReturnType();
-        
+
         $this->assertNotNull($returnType);
         $this->assertSame('int', $returnType->getName());
     }
 
-} 
+}
