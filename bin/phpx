@@ -45,9 +45,11 @@ $application->add(new PharVersionsCommand());
 $application->add(new CacheSizeCommand());
 $application->add(new CacheClearCommand());
 
-// If no arguments or first argument starts with -, use Symfony Console
-if (count($argv) === 1 || $argv[1][0] === '-' || $argv[1] === 'list' || $argv[1] === 'list-phars' || 
-    $argv[1] === 'help' || $argv[1] === 'cache:size' || $argv[1] === 'cache:clear') {
+// If no arguments, first argument starts with -, or it's a known command, use Symfony Console
+// Otherwise, treat as direct package execution (NPX-style)
+if (count($argv) === 1 || $argv[1][0] === '-' || 
+    in_array($argv[1], ['list', 'list-phars', 'help', 'cache:size', 'cache:clear', 'execute']) ||
+    !str_contains($argv[1], '/')) {
     $application->run();
     exit(0);
 }
