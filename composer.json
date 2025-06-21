@@ -1,6 +1,6 @@
 {
     "name": "eduardocruz/phpx",
-    "description": "NPX-like package execution tool for PHP",
+    "description": "PHPX is the MCP (Model Context Protocol) server execution tool for PHP.",
     "version": "0.0.1",
     "type": "project",
     "license": "MIT",

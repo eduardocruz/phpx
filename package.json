@@ -1,7 +1,7 @@
 {
   "name": "phpx",
   "version": "0.0.1",
-  "description": "PHPX is an NPX-like package execution tool for PHP. It allows you to execute PHP packages and PHAR files without installing them globally.",
+  "description": "PHPX is the MCP server execution tool for PHP.",
   "author": "Eduardo Cruz",
   "type": "module",
   "scripts": {
