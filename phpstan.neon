@@ -1,0 +1,19 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - vendor
+        - node_modules
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # Ignore Composer's internal complexity
+        - '#Call to an undefined method Composer\\#'
+        # Ignore Laravel Prompts dynamic calls
+        - '#Call to an undefined method Laravel\\Prompts\\#'
+    tmpDir: .phpstan-cache
+    bootstrapFiles:
+        - vendor/autoload.php 

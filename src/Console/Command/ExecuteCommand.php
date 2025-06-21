@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace PHPX\Console\Command;
 
+use PHPX\Package\ExecutionEnvironment;
+use PHPX\Package\PackageManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use PHPX\Package\PackageManager;
-use PHPX\Package\ExecutionEnvironment;
 
 class ExecuteCommand extends Command
 {
@@ -41,9 +41,11 @@ class ExecuteCommand extends Command
             $package = $packageManager->resolvePackage($packageSpec);
 
             $environment = new ExecutionEnvironment($package);
+
             return $environment->execute($args);
         } catch (\Exception $e) {
             $output->writeln('<error>' . $e->getMessage() . '</error>');
+
             return Command::FAILURE;
         }
     }

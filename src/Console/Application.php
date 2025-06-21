@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace PHPX\Console;
 
-use Symfony\Component\Console\Application as BaseApplication;
+use PHPX\Console\Command\CacheClearCommand;
+use PHPX\Console\Command\CacheSizeCommand;
 use PHPX\Console\Command\ExecuteCommand;
 use PHPX\Console\Command\ListPharsCommand;
-use PHPX\Console\Command\CacheSizeCommand;
-use PHPX\Console\Command\CacheClearCommand;
+use Symfony\Component\Console\Application as BaseApplication;
 
 class Application extends BaseApplication
 {

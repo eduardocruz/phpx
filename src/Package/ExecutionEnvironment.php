@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PHPX\Package;
 
-use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class ExecutionEnvironment
 {
@@ -26,7 +26,7 @@ class ExecutionEnvironment
 
         if ($this->debug) {
             echo "Executable: $executable\n";
-            echo "Arguments: " . implode(' ', $args) . "\n";
+            echo 'Arguments: ' . implode(' ', $args) . "\n";
             echo "Original working directory: {$this->originalWorkingDir}\n";
         }
 
@@ -47,7 +47,7 @@ class ExecutionEnvironment
         }
 
         if ($this->debug) {
-            echo "Full command: " . implode(' ', $command) . "\n";
+            echo 'Full command: ' . implode(' ', $command) . "\n";
         }
 
         // Create and configure process
@@ -70,8 +70,9 @@ class ExecutionEnvironment
             return $process->getExitCode();
         } catch (ProcessFailedException $e) {
             if ($this->debug) {
-                echo "Process failed: " . $e->getMessage() . "\n";
+                echo 'Process failed: ' . $e->getMessage() . "\n";
             }
+
             return $e->getProcess()->getExitCode();
         }
     }

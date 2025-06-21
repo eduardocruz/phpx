@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace PHPX\Console\Command;
 
+use function Laravel\Prompts\{confirm, spin, table};
+
+use PHPX\Package\PackageManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use PHPX\Package\PackageManager;
-use function Laravel\Prompts\{table, confirm, spin};
 
 class CacheSizeCommand extends Command
 {
@@ -27,20 +28,21 @@ class CacheSizeCommand extends Command
 
         if (!file_exists($cacheDir)) {
             $output->writeln("<error>Cache directory does not exist: $cacheDir</error>");
+
             return Command::FAILURE;
         }
 
         // Calculate sizes with a spinner
         $rows = [];
-        $totalSize = spin(function() use ($cacheDir, &$rows) {
+        $totalSize = spin(function () use ($cacheDir, &$rows) {
             $total = $this->getDirectorySize($cacheDir);
-            
+
             // Get all files recursively
             $files = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($cacheDir, \RecursiveDirectoryIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
-            
+
             foreach ($files as $file) {
                 if ($file->isFile()) {
                     $size = $file->getSize();
@@ -50,33 +52,33 @@ class CacheSizeCommand extends Command
                     $rows[] = [$formattedSize, $relativePath];
                 }
             }
-            
+
             // Sort rows by size (descending)
-            usort($rows, function($a, $b) {
+            usort($rows, function ($a, $b) {
                 return $this->compareSizes($b[0], $a[0]);
             });
-            
+
             return $total;
         }, 'Calculating cache sizes...');
 
         $formattedTotalSize = $this->formatSize($totalSize);
-        
+
         $output->writeln('');
         $output->writeln("<info>PHPX Cache Directory:</info> $cacheDir");
         $output->writeln('');
 
         // Display the table using Laravel Prompts
         table(
-            ['Size', 'File'], 
+            ['Size', 'File'],
             array_merge(
                 $rows,
                 [['---', '---']],
                 [[$formattedTotalSize, 'TOTAL']]
             )
         );
-        
+
         $output->writeln('');
-        
+
         // Add confirmation prompt for cache clearing
         if (confirm('Would you like to clear the cache?')) {
             $output->writeln('To clear the cache, run: rm -rf ' . escapeshellarg($cacheDir));
@@ -106,6 +108,7 @@ class CacheSizeCommand extends Command
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $i = 0;
+
         while ($size >= 1024 && $i < count($units) - 1) {
             $size /= 1024;
             $i++;
@@ -113,30 +116,30 @@ class CacheSizeCommand extends Command
 
         return round($size, 2) . ' ' . $units[$i];
     }
-    
+
     private function compareSizes(string $sizeA, string $sizeB): int
     {
         // Extract numeric values and units
         preg_match('/^([\d.]+)\s+(\w+)$/', $sizeA, $matchesA);
         preg_match('/^([\d.]+)\s+(\w+)$/', $sizeB, $matchesB);
-        
+
         if (empty($matchesA) || empty($matchesB)) {
             return 0;
         }
-        
+
         $valueA = (float) $matchesA[1];
         $unitA = $matchesA[2];
-        
+
         $valueB = (float) $matchesB[1];
         $unitB = $matchesB[2];
-        
+
         $units = ['B' => 0, 'KB' => 1, 'MB' => 2, 'GB' => 3, 'TB' => 4];
-        
+
         // Compare units first
         if ($unitA !== $unitB) {
             return $units[$unitA] <=> $units[$unitB];
         }
-        
+
         // If units are the same, compare values
         return $valueA <=> $valueB;
     }

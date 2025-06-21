@@ -1,0 +1,149 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        php: ['8.1', '8.2', '8.3']
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, json, zip, curl, fileinfo, tokenizer
+          coverage: xdebug
+          
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+          
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+            
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+        
+      - name: Create tests directory structure
+        run: |
+          mkdir -p tests/{Unit,Integration,Feature}
+          mkdir -p coverage
+          
+      - name: Run tests
+        run: composer test
+        
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.php == '8.3'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/clover.xml
+          fail_ci_if_error: false
+
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, zip, curl, fileinfo, tokenizer
+          
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+        
+      - name: Create cache directories
+        run: |
+          mkdir -p .phpstan-cache
+          mkdir -p .phpunit.cache
+          
+      - name: Check code style
+        run: composer cs-check
+        
+      - name: Run PHPStan
+        run: composer phpstan
+        
+      - name: Run PHPMD
+        run: composer phpmd
+        continue-on-error: true
+        
+      - name: Run PHP_CodeSniffer
+        run: composer phpcs
+        continue-on-error: true
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, zip
+          
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+        
+      - name: Security Audit
+        run: composer audit
+        continue-on-error: true
+
+  build:
+    name: Build PHAR
+    runs-on: ubuntu-latest
+    needs: [test, quality]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, ctype, json, zip, phar
+          
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader
+        
+      - name: Create PHAR build directory
+        run: mkdir -p build
+        
+      - name: Build PHAR (placeholder)
+        run: |
+          echo "PHAR build will be implemented in future releases" > build/phpx.phar
+          echo "Current version: $(git describe --tags --always)" >> build/phpx.phar
+          
+      - name: Upload PHAR artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: phpx-phar
+          path: build/phpx.phar 

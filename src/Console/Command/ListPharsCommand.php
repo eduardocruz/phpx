@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace PHPX\Console\Command;
 
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\table;
+use function Laravel\Prompts\text;
+
+use PHPX\Package\PackageManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use function Laravel\Prompts\table;
-use function Laravel\Prompts\text;
-use function Laravel\Prompts\select;
-use PHPX\Package\PackageManager;
 
 class ListPharsCommand extends Command
 {
@@ -30,16 +31,17 @@ class ListPharsCommand extends Command
 
         // Prepare table data with file sizes
         $tableData = [];
+
         foreach ($knownPhars as $name => $versions) {
             $versionKeys = array_keys($versions);
             $latestVersion = array_key_exists('latest', $versions) ? 'latest' : end($versionKeys);
             $pharPath = $this->getPharPath($name, $latestVersion);
             $size = file_exists($pharPath) ? $this->formatSize(filesize($pharPath)) : 'Not downloaded';
-            
+
             $tableData[] = [
                 'name' => $name,
                 'versions' => implode(', ', array_keys($versions)),
-                'aliases' => isset($pharAliases[$name]) ? $pharAliases[$name] : '',
+                'aliases' => $pharAliases[$name] ?? '',
                 'size' => $size,
             ];
         }
@@ -87,16 +89,17 @@ class ListPharsCommand extends Command
         // Display table with Laravel Prompts
         if (empty($tableData)) {
             $output->writeln('<info>No PHARs found matching your criteria.</info>');
+
             return Command::SUCCESS;
         }
 
         table(
             ['PHAR Name', 'Available Versions', 'Aliases', 'Size'],
-            array_map(fn($row) => [
+            array_map(fn ($row) => [
                 $row['name'],
                 $row['versions'],
                 $row['aliases'],
-                $row['size']
+                $row['size'],
             ], $tableData)
         );
 
@@ -118,6 +121,7 @@ class ListPharsCommand extends Command
     {
         $cacheDir = $this->getCacheDir();
         $pharBaseDir = $cacheDir . '/phars/' . basename($pharName, '.phar');
+
         return $pharBaseDir . '/' . $version . '/' . $pharName;
     }
 
@@ -136,7 +140,7 @@ class ListPharsCommand extends Command
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
         $bytes /= pow(1024, $pow);
-        
+
         return round($bytes, 1) . ' ' . $units[$pow];
     }
 }

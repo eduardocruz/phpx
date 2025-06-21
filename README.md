@@ -294,3 +294,120 @@ Whether you're actively using **phpx**, exploring its possibilities, or just exc
 👉 [Become a Sponsor](https://github.com/sponsors/eduardocruz)
 
 Thank you for empowering open source!
+
+## CI/CD Pipeline
+
+PHPX uses a comprehensive CI/CD pipeline to ensure code quality and reliability:
+
+### Automated Testing
+
+- **Multi-Platform Testing**: Tests run on Ubuntu, macOS, and Windows
+- **Multi-PHP Version**: Supports PHP 8.1, 8.2, and 8.3
+- **Test Coverage**: Unit, integration, and feature tests with coverage reporting
+- **Automated Test Execution**: Tests run on every push and pull request
+
+### Code Quality Checks
+
+- **PHPStan**: Static analysis at level 8 for type safety
+- **PHP CS Fixer**: Automated code style fixing with PSR-12 compliance
+- **PHPMD**: Mess detection for code quality issues
+- **PHP_CodeSniffer**: Additional code style validation
+
+### Security Analysis
+
+- **CodeQL**: Automated security vulnerability scanning
+- **Composer Audit**: Dependency security vulnerability checks
+- **Dependabot**: Automated dependency updates with security patches
+
+### Automated Workflows
+
+1. **Continuous Integration** (`.github/workflows/ci.yml`)
+   - Runs on every push and pull request
+   - Multi-matrix testing across OS and PHP versions
+   - Code quality checks and security scans
+   - Build artifact generation
+
+2. **Release Automation** (`.github/workflows/release.yml`)
+   - Triggered on version tags (`v*`)
+   - Automated PHAR building and release creation
+   - GitHub release with downloadable artifacts
+
+3. **Security Scanning** (`.github/workflows/codeql.yml`)
+   - Weekly scheduled security analysis
+   - Real-time vulnerability detection
+   - Automated security reporting
+
+4. **Dependency Management** (`.github/dependabot.yml`)
+   - Weekly dependency update checks
+   - Automated pull requests for updates
+   - Separate handling of production and development dependencies
+
+### Development Workflow
+
+```bash
+# Install dependencies
+composer install
+
+# Run tests
+composer test
+
+# Check code style
+composer cs-check
+
+# Fix code style
+composer cs-fix
+
+# Run static analysis
+composer phpstan
+
+# Run all quality checks
+composer quality
+```
+
+### Quality Standards
+
+- **Test Coverage**: Comprehensive test suite covering core functionality
+- **Code Style**: PSR-12 compliance with additional formatting rules
+- **Static Analysis**: PHPStan level 8 for maximum type safety
+- **Security**: Regular vulnerability scanning and dependency updates
+- **Documentation**: Inline documentation and comprehensive README
+
+## Development
+
+### Running Tests
+
+```bash
+# Run all tests
+composer test
+
+# Run specific test suites
+vendor/bin/phpunit tests/Unit
+vendor/bin/phpunit tests/Integration
+vendor/bin/phpunit tests/Feature
+```
+
+### Code Quality
+
+```bash
+# Check code style
+composer cs-check
+
+# Fix code style automatically
+composer cs-fix
+
+# Run static analysis
+composer phpstan
+
+# Run mess detection
+composer phpmd
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run the quality checks
+5. Submit a pull request
+
+All contributions must pass the CI/CD pipeline before merging.

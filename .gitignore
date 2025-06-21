@@ -48,6 +48,21 @@ composer.lock
 ehthumbs.db
 Thumbs.db
 
+# CI/CD and Quality Tools
+.phpstan-cache/
+.phpmd.cache
+.php-cs-fixer.cache
+phpunit.xml.bak
+phpstan-baseline.neon
+infection.log
+.scrutinizer.yml.bak
+
+# Coverage reports
+coverage/
+coverage.xml
+clover.xml
+junit.xml
+
 # Added by Claude Task Master
 # Logs
 logs

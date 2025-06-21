@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace PHPX\Console\Command;
 
+use PHPX\Package\PackageManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use PHPX\Package\PackageManager;
 
 class PharVersionsCommand extends Command
 {
@@ -30,7 +30,7 @@ class PharVersionsCommand extends Command
         $output->writeln('PHPX supports specifying versions for PHAR files using the following syntax:');
         $output->writeln('  phpx <phar-name>:<version> [arguments]');
         $output->writeln('');
-        
+
         $output->writeln('<info>Examples:</info>');
         $output->writeln('  phpx php-cs-fixer.phar fix src/                  # Latest version (default)');
         $output->writeln('  phpx php-cs-fixer.phar:3.26 fix src/            # Specific version');
@@ -43,6 +43,7 @@ class PharVersionsCommand extends Command
 
         foreach ($knownPhars as $name => $versions) {
             $output->writeln("  <comment>$name</comment>");
+
             foreach ($versions as $version => $url) {
                 $output->writeln("    - $version");
             }
@@ -55,4 +56,4 @@ class PharVersionsCommand extends Command
 
         return Command::SUCCESS;
     }
-} 
+}
