@@ -139,7 +139,7 @@ jobs:
           echo "Current version: $(git describe --tags --always)" >> build/phpx.phar
           
       - name: Upload PHAR artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: phpx-phar
           path: build/phpx.phar 
