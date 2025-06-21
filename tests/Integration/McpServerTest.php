@@ -76,8 +76,8 @@ class McpServerTest extends TestCase
         $testPackageName = 'test-mcp-server.phar';
         $pharPath = sys_get_temp_dir() . '/' . $testPackageName;
         copy($this->testServerPath, $pharPath);
-        chmod($pharPath, 0755);
-        
+        chmod($pharPath, 0o755);
+
         try {
             // This is the CRITICAL test - PHPX should process STDIO input just like direct PHP execution
             $process = new Process([$phpxBinary, $pharPath]);
@@ -97,14 +97,16 @@ class McpServerTest extends TestCase
                     "Exit code: $exitCode\n" .
                     "STDOUT: $stdout\n" .
                     "STDERR: $stderr\n" .
-                    "This demonstrates the core issue that blocks MCP server execution."
+                    'This demonstrates the core issue that blocks MCP server execution.'
                 );
             }
 
             // This should work but currently FAILS due to STDIO handling issue
-            $this->assertSame(0, $exitCode, 
-                'PHPX should process MCP messages via STDIO. Exit code: ' . $exitCode . 
-                "\nSTDOUT: " . $stdout . 
+            $this->assertSame(
+                0,
+                $exitCode,
+                'PHPX should process MCP messages via STDIO. Exit code: ' . $exitCode .
+                "\nSTDOUT: " . $stdout .
                 "\nSTDERR: " . $stderr
             );
 
@@ -127,7 +129,8 @@ class McpServerTest extends TestCase
                 }
             }
 
-            $this->assertTrue($validJsonFound, 
+            $this->assertTrue(
+                $validJsonFound,
                 'PHPX should return valid MCP response with serverInfo. Output: ' . $stdout
             );
 
@@ -146,16 +149,21 @@ class McpServerTest extends TestCase
 
         // First verify that direct PHP execution works (baseline)
         $initMessage = $this->getInitializeMessage();
-        
+
         $directPhpProcess = new Process(['php', $this->testServerPath]);
         $directPhpProcess->setInput($initMessage . "\n");
         $directPhpProcess->setTimeout(5);
         $directPhpProcess->run();
-        
-        $this->assertSame(0, $directPhpProcess->getExitCode(), 
-            'Direct PHP execution should work as baseline');
-        $this->assertNotEmpty($directPhpProcess->getOutput(), 
-            'Direct PHP should return MCP response');
+
+        $this->assertSame(
+            0,
+            $directPhpProcess->getExitCode(),
+            'Direct PHP execution should work as baseline'
+        );
+        $this->assertNotEmpty(
+            $directPhpProcess->getOutput(),
+            'Direct PHP should return MCP response'
+        );
 
         // Now test PHPX execution - this should demonstrate the STDIO issue
         // PHPX currently doesn't support direct file execution, but it should
@@ -176,12 +184,14 @@ class McpServerTest extends TestCase
                 "Exit code: $exitCode\n" .
                 "STDOUT: $stdout\n" .
                 "STDERR: $stderr\n" .
-                "This demonstrates the core issue that blocks MCP server execution."
+                'This demonstrates the core issue that blocks MCP server execution.'
             );
         }
 
         // These assertions will fail until EDU-142 is fixed
-        $this->assertSame(0, $exitCode, 
+        $this->assertSame(
+            0,
+            $exitCode,
             "PHPX should execute PHP files with STDIO support.\n" .
             "Exit code: $exitCode\n" .
             "STDOUT: $stdout\n" .
@@ -196,8 +206,10 @@ class McpServerTest extends TestCase
 
         foreach ($lines as $line) {
             $line = trim($line);
+
             if (!empty($line) && $this->isValidJson($line)) {
                 $data = json_decode($line, true);
+
                 if (isset($data['result']['serverInfo'])) {
                     $validJsonFound = true;
                     break;
@@ -205,7 +217,8 @@ class McpServerTest extends TestCase
             }
         }
 
-        $this->assertTrue($validJsonFound, 
+        $this->assertTrue(
+            $validJsonFound,
             "PHPX should return valid MCP response. Output: $stdout"
         );
     }
@@ -339,13 +352,13 @@ while (($line = fgets(STDIN)) !== false) {
             'type' => 'project',
             'require' => ['php' => '>=8.1'],
             'autoload' => ['psr-4' => ['Test\\' => 'src/']],
-            'bin' => ['server.php']
+            'bin' => ['server.php'],
         ];
         file_put_contents($tempDir . '/composer.json', json_encode($composerJson, JSON_PRETTY_PRINT));
 
         // Copy the MCP server
         copy($this->testServerPath, $tempDir . '/server.php');
-        chmod($tempDir . '/server.php', 0755);
+        chmod($tempDir . '/server.php', 0o755);
 
         return $tempDir;
     }

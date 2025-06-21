@@ -89,10 +89,10 @@ class ExecutionEnvironment
         $read = [STDIN];
         $write = null;
         $except = null;
-        
+
         // Use stream_select with 0 timeout to check if data is available
         $result = stream_select($read, $write, $except, 0);
-        
+
         return $result > 0;
     }
 
@@ -104,12 +104,15 @@ class ExecutionEnvironment
 
         // Read all input from STDIN first
         $input = '';
+
         while (!feof(STDIN)) {
             $line = fgets(STDIN);
+
             if ($line !== false) {
                 $input .= $line;
+
                 if ($this->debug) {
-                    echo "Read from STDIN: " . trim($line) . "\n";
+                    echo 'Read from STDIN: ' . trim($line) . "\n";
                 }
             }
         }
@@ -117,8 +120,9 @@ class ExecutionEnvironment
         // Set the input for the process
         if (!empty($input)) {
             $process->setInput($input);
+
             if ($this->debug) {
-                echo "Set process input: " . trim($input) . "\n";
+                echo 'Set process input: ' . trim($input) . "\n";
             }
         }
 
@@ -141,15 +145,16 @@ class ExecutionEnvironment
         if (!is_readable($path)) {
             return false;
         }
-        
+
         $handle = fopen($path, 'r');
+
         if (!$handle) {
             return false;
         }
-        
+
         $firstLine = fgets($handle);
         fclose($handle);
-        
+
         return $firstLine !== false && (
             str_starts_with($firstLine, '#!/usr/bin/env php') ||
             str_starts_with($firstLine, '#!/usr/bin/php') ||

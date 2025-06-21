@@ -32,9 +32,11 @@ class Package
         // Handle direct file execution
         if ($this->directFile !== null) {
             $filePath = $this->path . '/' . $this->directFile;
+
             if (file_exists($filePath)) {
                 return $filePath;
             }
+
             throw new \RuntimeException("Direct file not found: $filePath");
         }
 

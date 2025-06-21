@@ -116,7 +116,7 @@ class PackageManager
         // Check if it's a direct PHP file path (absolute or relative)
         $parts = explode(':', $packageSpec);
         $path = $parts[0];
-        
+
         // Check if it's a PHP file and exists
         return (str_ends_with(strtolower($path), '.php') && file_exists($path)) ||
                (is_file($path) && $this->isPhpFile($path));
@@ -128,15 +128,16 @@ class PackageManager
         if (!is_readable($path)) {
             return false;
         }
-        
+
         $handle = fopen($path, 'r');
+
         if (!$handle) {
             return false;
         }
-        
+
         $firstLine = fgets($handle);
         fclose($handle);
-        
+
         return $firstLine !== false && (
             str_starts_with($firstLine, '#!/usr/bin/env php') ||
             str_starts_with($firstLine, '#!/usr/bin/php') ||
@@ -149,23 +150,23 @@ class PackageManager
         // Extract just the file path (ignore version spec if any)
         $parts = explode(':', $filePath);
         $actualPath = $parts[0];
-        
+
         if (!file_exists($actualPath)) {
             throw new \RuntimeException("PHP file not found: $actualPath");
         }
-        
+
         if (!is_readable($actualPath)) {
             throw new \RuntimeException("PHP file is not readable: $actualPath");
         }
-        
+
         if ($this->debug) {
             echo "Handling direct PHP file: $actualPath\n";
         }
-        
+
         // Create a temporary package structure that points to the file's directory
         $fileDir = dirname(realpath($actualPath));
         $fileName = basename($actualPath);
-        
+
         // Create a Package that represents the direct file execution
         return new Package($fileDir, false, $fileName);
     }
