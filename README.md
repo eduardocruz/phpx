@@ -1,6 +1,6 @@
 # PHPX
 
-PHPX is an NPX-like package execution tool for PHP. It allows you to execute PHP packages and PHAR files without installing them globally, featuring a beautiful and user-friendly command-line interface powered by Laravel Prompts.
+PHPX is the MCP server execution tool for PHP. It allows you to execute PHP packages and PHAR files without installing them globally, featuring a beautiful and user-friendly command-line interface powered by Laravel Prompts.
 
 ## Requirements
 
@@ -12,11 +12,11 @@ PHPX is an NPX-like package execution tool for PHP. It allows you to execute PHP
 
 PHPX was inspired by similar tools in other ecosystems:
 - `npx` for Node.js (https://github.com/npm/npx) - Executes Node.js packages
-- `uvx` for Python (https://github.com/astral-sh/uv) - Executes Python packages
+- `uv` for Python (https://github.com/astral-sh/uv) - Executes Python packages
 
 The Model Context Protocol (MCP) is an open protocol that enables seamless integration between LLM applications and external data sources and tools. Modern AI-powered code editors like Cursor, Windsurf, and Claude Desktop use MCP Servers to provide AI capabilities in development environments.
 
-Having package execution tools like `npx` and `uvx` allows developers to easily run MCP Servers without permanent installation. However, PHP lacked such a tool, creating a gap for PHP developers working with AI-assisted coding tools.
+Having package execution tools like `npx` and `uv` allows developers to easily run MCP Servers without permanent installation. However, PHP lacked such a tool, creating a gap for PHP developers working with AI-assisted coding tools.
 
 PHPX was created to bridge this gap, enabling PHP projects to be easily integrated with the AI-assisted development ecosystem, particularly when working with MCP-compatible editors and tools (https://github.com/modelcontextprotocol/servers).
 
