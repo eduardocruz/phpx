@@ -6,6 +6,7 @@ namespace PHPX\Package;
 
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Process\InputStream;
 
 class ExecutionEnvironment
 {
@@ -64,8 +65,8 @@ class ExecutionEnvironment
         try {
             // Check if we have STDIN input to pass through
             if ($this->hasStdinInput()) {
-                // Handle STDIO passthrough for interactive processes (like MCP servers)
-                return $this->runWithStdioPassthrough($process);
+                // Handle persistent STDIO communication for interactive processes (like MCP servers)
+                return $this->runWithPersistentStdio($process);
             } else {
                 // Run the process normally and output directly
                 $process->mustRun(function ($type, $buffer) {
@@ -96,47 +97,57 @@ class ExecutionEnvironment
         return $result > 0;
     }
 
-    private function runWithStdioPassthrough(Process $process): int
+    private function runWithPersistentStdio(Process $process): int
     {
         if ($this->debug) {
-            echo "Running with STDIO passthrough for interactive process\n";
+            echo "Running with persistent STDIO for interactive process\n";
         }
 
-        // Read all input from STDIN first
-        $input = '';
+        // Use InputStream for persistent input handling
+        $inputStream = new \Symfony\Component\Process\InputStream();
+        $process->setInput($inputStream);
 
-        while (!feof(STDIN)) {
-            $line = fgets(STDIN);
-
-            if ($line !== false) {
-                $input .= $line;
-
-                if ($this->debug) {
-                    echo 'Read from STDIN: ' . trim($line) . "\n";
-                }
-            }
-        }
-
-        // Set the input for the process
-        if (!empty($input)) {
-            $process->setInput($input);
-
-            if ($this->debug) {
-                echo 'Set process input: ' . trim($input) . "\n";
-            }
-        }
-
-        // Run the process and capture output
-        $process->run(function ($type, $buffer) {
-            // Forward all output directly to STDOUT/STDERR
+        // Start the process asynchronously
+        $process->start(function ($type, $buffer) {
+            // Forward all output directly to appropriate streams
             if ($type === Process::OUT) {
                 echo $buffer;
+                flush();
             } else {
                 fwrite(STDERR, $buffer);
+                fflush(STDERR);
             }
         });
 
-        return $process->getExitCode();
+        // Set up non-blocking STDIN
+        stream_set_blocking(STDIN, false);
+
+        // Main communication loop - keep running while process is alive
+        while ($process->isRunning()) {
+            // Check for input from STDIN
+            $input = fread(STDIN, 8192);
+            if ($input !== false && $input !== '') {
+                if ($this->debug) {
+                    echo "Forwarding STDIN to process: " . trim($input) . "\n";
+                }
+                $inputStream->write($input);
+            }
+
+            // Small delay to prevent excessive CPU usage
+            usleep(10000); // 10ms
+        }
+
+        // Close the input stream when done
+        $inputStream->close();
+
+        // Wait for the process to finish and get the exit code
+        $exitCode = $process->wait();
+
+        if ($this->debug) {
+            echo "Process finished with exit code: $exitCode\n";
+        }
+
+        return $exitCode;
     }
 
     private function isPhpFile(string $path): bool
