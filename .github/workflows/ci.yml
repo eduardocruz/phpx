@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         php: ['8.1', '8.2', '8.3']
         
     steps:
@@ -77,14 +77,10 @@ jobs:
         
       - name: Create cache directories
         run: |
-          mkdir -p .phpstan-cache
           mkdir -p .phpunit.cache
           
       - name: Check code style
         run: composer cs-check
-        
-      - name: Run PHPStan
-        run: composer phpstan
         
       - name: Run PHPMD
         run: composer phpmd

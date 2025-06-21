@@ -301,14 +301,14 @@ PHPX uses a comprehensive CI/CD pipeline to ensure code quality and reliability:
 
 ### Automated Testing
 
-- **Multi-Platform Testing**: Tests run on Ubuntu, macOS, and Windows
+- **Multi-Platform Testing**: Tests run on Ubuntu and macOS
 - **Multi-PHP Version**: Supports PHP 8.1, 8.2, and 8.3
 - **Test Coverage**: Unit, integration, and feature tests with coverage reporting
 - **Automated Test Execution**: Tests run on every push and pull request
 
 ### Code Quality Checks
 
-- **PHPStan**: Static analysis at level 8 for type safety
+
 - **PHP CS Fixer**: Automated code style fixing with PSR-12 compliance
 - **PHPMD**: Mess detection for code quality issues
 - **PHP_CodeSniffer**: Additional code style validation
@@ -357,18 +357,15 @@ composer cs-check
 # Fix code style
 composer cs-fix
 
-# Run static analysis
-composer phpstan
-
 # Run all quality checks
-composer quality
+composer ci
 ```
 
 ### Quality Standards
 
 - **Test Coverage**: Comprehensive test suite covering core functionality
 - **Code Style**: PSR-12 compliance with additional formatting rules
-- **Static Analysis**: PHPStan level 8 for maximum type safety
+
 - **Security**: Regular vulnerability scanning and dependency updates
 - **Documentation**: Inline documentation and comprehensive README
 
@@ -395,8 +392,7 @@ composer cs-check
 # Fix code style automatically
 composer cs-fix
 
-# Run static analysis
-composer phpstan
+
 
 # Run mess detection
 composer phpmd
