@@ -317,7 +317,7 @@ PHPX uses a comprehensive CI/CD pipeline to ensure code quality and reliability:
 
 - **CodeQL**: Automated security vulnerability scanning
 - **Composer Audit**: Dependency security vulnerability checks
-- **Dependabot**: Automated dependency updates with security patches
+
 
 ### Automated Workflows
 
@@ -337,10 +337,7 @@ PHPX uses a comprehensive CI/CD pipeline to ensure code quality and reliability:
    - Real-time vulnerability detection
    - Automated security reporting
 
-4. **Dependency Management** (`.github/dependabot.yml`)
-   - Weekly dependency update checks
-   - Automated pull requests for updates
-   - Separate handling of production and development dependencies
+
 
 ### Development Workflow
 
