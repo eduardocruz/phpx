@@ -1,12 +1,11 @@
 {
-    "name": "phpx/phpx",
+    "name": "eduardocruz/phpx",
     "description": "NPX-like package execution tool for PHP",
     "type": "project",
     "license": "MIT",
     "authors": [
         {
-            "name": "Eduardo Cruz",
-            "email": "eduardo@phpx.dev"
+            "name": "Eduardo Cruz"
         }
     ],
     "require": {
