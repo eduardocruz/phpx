@@ -1,8 +1,15 @@
 {
     "name": "eduardocruz/phpx",
     "description": "NPX-like package execution tool for PHP",
+    "version": "0.0.1",
     "type": "project",
     "license": "MIT",
+    "keywords": ["php", "package", "execution", "npx", "cli", "tool"],
+    "homepage": "https://github.com/eduardocruz/phpx",
+    "support": {
+        "issues": "https://github.com/eduardocruz/phpx/issues",
+        "source": "https://github.com/eduardocruz/phpx"
+    },
     "authors": [
         {
             "name": "Eduardo Cruz"
