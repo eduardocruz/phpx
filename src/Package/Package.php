@@ -8,11 +8,13 @@ class Package
 {
     private string $path;
     private bool $isPhar;
+    private ?string $directFile;
 
-    public function __construct(string $path, bool $isPhar = false)
+    public function __construct(string $path, bool $isPhar = false, ?string $directFile = null)
     {
         $this->path = $path;
         $this->isPhar = $isPhar;
+        $this->directFile = $directFile;
     }
 
     public function getPath(): string
@@ -27,6 +29,15 @@ class Package
 
     public function getExecutable(): string
     {
+        // Handle direct file execution
+        if ($this->directFile !== null) {
+            $filePath = $this->path . '/' . $this->directFile;
+            if (file_exists($filePath)) {
+                return $filePath;
+            }
+            throw new \RuntimeException("Direct file not found: $filePath");
+        }
+
         if ($this->isPhar) {
             $phars = glob($this->path . '/*.phar');
 

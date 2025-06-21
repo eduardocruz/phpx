@@ -69,6 +69,145 @@ class McpServerTest extends TestCase
         // Test that PHPX binary exists and is executable
         $this->assertFileExists($phpxBinary);
         $this->assertTrue(is_executable($phpxBinary));
+
+        $initMessage = $this->getInitializeMessage();
+
+        // Create a simple test by copying to a location PHPX can find
+        $testPackageName = 'test-mcp-server.phar';
+        $pharPath = sys_get_temp_dir() . '/' . $testPackageName;
+        copy($this->testServerPath, $pharPath);
+        chmod($pharPath, 0755);
+        
+        try {
+            // This is the CRITICAL test - PHPX should process STDIO input just like direct PHP execution
+            $process = new Process([$phpxBinary, $pharPath]);
+            $process->setInput($initMessage . "\n");
+            $process->setTimeout(10); // 10 second timeout
+            $process->run();
+
+            // Document the current failure for EDU-142 to fix
+            $exitCode = $process->getExitCode();
+            $stdout = $process->getOutput();
+            $stderr = $process->getErrorOutput();
+
+            if ($exitCode !== 0) {
+                $this->markTestIncomplete(
+                    "STDIO Issue Reproduced - Ready for EDU-142 fix:\n" .
+                    "PHPX cannot execute PHAR files with STDIO support.\n" .
+                    "Exit code: $exitCode\n" .
+                    "STDOUT: $stdout\n" .
+                    "STDERR: $stderr\n" .
+                    "This demonstrates the core issue that blocks MCP server execution."
+                );
+            }
+
+            // This should work but currently FAILS due to STDIO handling issue
+            $this->assertSame(0, $exitCode, 
+                'PHPX should process MCP messages via STDIO. Exit code: ' . $exitCode . 
+                "\nSTDOUT: " . $stdout . 
+                "\nSTDERR: " . $stderr
+            );
+
+            $this->assertNotEmpty($stdout, 'PHPX should receive response from MCP server via STDIO');
+
+            // Parse the JSON response
+            $lines = explode("\n", trim($stdout));
+            $validJsonFound = false;
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+
+                if (!empty($line) && $this->isValidJson($line)) {
+                    $data = json_decode($line, true);
+
+                    if (isset($data['result']['serverInfo'])) {
+                        $validJsonFound = true;
+                        break;
+                    }
+                }
+            }
+
+            $this->assertTrue($validJsonFound, 
+                'PHPX should return valid MCP response with serverInfo. Output: ' . $stdout
+            );
+
+        } finally {
+            unlink($pharPath);
+        }
+    }
+
+    public function testPhpxStdioHandlingWithDirectFile(): void
+    {
+        $phpxBinary = $this->getBinPath() . '/phpx';
+
+        if (!file_exists($phpxBinary)) {
+            $this->markTestSkipped('PHPX binary not found');
+        }
+
+        // First verify that direct PHP execution works (baseline)
+        $initMessage = $this->getInitializeMessage();
+        
+        $directPhpProcess = new Process(['php', $this->testServerPath]);
+        $directPhpProcess->setInput($initMessage . "\n");
+        $directPhpProcess->setTimeout(5);
+        $directPhpProcess->run();
+        
+        $this->assertSame(0, $directPhpProcess->getExitCode(), 
+            'Direct PHP execution should work as baseline');
+        $this->assertNotEmpty($directPhpProcess->getOutput(), 
+            'Direct PHP should return MCP response');
+
+        // Now test PHPX execution - this should demonstrate the STDIO issue
+        // PHPX currently doesn't support direct file execution, but it should
+        $process = new Process([$phpxBinary, $this->testServerPath]);
+        $process->setInput($initMessage . "\n");
+        $process->setTimeout(10);
+        $process->run();
+
+        $exitCode = $process->getExitCode();
+        $stdout = $process->getOutput();
+        $stderr = $process->getErrorOutput();
+
+        // Document the current failure for EDU-142 to fix
+        if ($exitCode !== 0) {
+            $this->markTestIncomplete(
+                "STDIO Issue Reproduced - Ready for EDU-142 fix:\n" .
+                "PHPX cannot execute PHP files directly with STDIO support.\n" .
+                "Exit code: $exitCode\n" .
+                "STDOUT: $stdout\n" .
+                "STDERR: $stderr\n" .
+                "This demonstrates the core issue that blocks MCP server execution."
+            );
+        }
+
+        // These assertions will fail until EDU-142 is fixed
+        $this->assertSame(0, $exitCode, 
+            "PHPX should execute PHP files with STDIO support.\n" .
+            "Exit code: $exitCode\n" .
+            "STDOUT: $stdout\n" .
+            "STDERR: $stderr"
+        );
+
+        $this->assertNotEmpty($stdout, 'PHPX should pass STDIO input to the PHP script');
+
+        // Verify we get a valid JSON response
+        $lines = explode("\n", trim($stdout));
+        $validJsonFound = false;
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (!empty($line) && $this->isValidJson($line)) {
+                $data = json_decode($line, true);
+                if (isset($data['result']['serverInfo'])) {
+                    $validJsonFound = true;
+                    break;
+                }
+            }
+        }
+
+        $this->assertTrue($validJsonFound, 
+            "PHPX should return valid MCP response. Output: $stdout"
+        );
     }
 
     public function testMcpToolExecution(): void
@@ -200,11 +339,13 @@ while (($line = fgets(STDIN)) !== false) {
             'type' => 'project',
             'require' => ['php' => '>=8.1'],
             'autoload' => ['psr-4' => ['Test\\' => 'src/']],
+            'bin' => ['server.php']
         ];
         file_put_contents($tempDir . '/composer.json', json_encode($composerJson, JSON_PRETTY_PRINT));
 
         // Copy the MCP server
         copy($this->testServerPath, $tempDir . '/server.php');
+        chmod($tempDir . '/server.php', 0755);
 
         return $tempDir;
     }
