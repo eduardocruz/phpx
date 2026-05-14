@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../npx"
+		},
+		{
+			"path": "../uv"
+		},
+		{
+			"path": "../cpx"
+		}
+	],
+	"settings": {}
+}
